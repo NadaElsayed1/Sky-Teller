@@ -1,17 +1,26 @@
 package com.example.clearsky.model.repository
 
-import com.example.clearsky.db.WeatherDao
-import com.example.clearsky.network.ApiService
+import com.example.clearsky.db.WeatherLocalDataSource
+import com.example.clearsky.model.CurrentResponseApi
+import com.example.clearsky.network.RemoteDataStructure
 
-class WeatherRepository(val api: ApiService) {
+class WeatherRepository(private val remoteDataStructure: RemoteDataStructure,private val localDataSource: WeatherLocalDataSource) {
 
-    companion object {
-        private const val API_KEY = "9832068f1c229dbbef08a89208bb2d8f"
+    suspend fun getCurrentWeather(lat: Double, lng: Double, unit: String) =
+        remoteDataStructure.fetchCurrentWeather(lat, lng, unit)
+
+    suspend fun getForecastWeather(lat: Double, lng: Double, unit: String) =
+        remoteDataStructure.fetchForecastWeather(lat, lng, unit)
+
+    suspend fun getFavorites(): List<CurrentResponseApi> {
+        return localDataSource.getFavorites()
     }
 
-    fun getCurrentWeather(lat:Double, lng:Double, unit:String)=
-        api.getCurrentWeather(lat,lng,unit,API_KEY)
+    fun addFavorite(city: CurrentResponseApi) {
+        localDataSource.addFavorite(city)
+    }
 
-    fun getForecastWeather(lat:Double, lng:Double, unit:String)=
-        api.getForecastWeather(lat,lng,unit,API_KEY)
+    fun removeFavorite(city: CurrentResponseApi) {
+        localDataSource.removeFavorite(city)
+    }
 }

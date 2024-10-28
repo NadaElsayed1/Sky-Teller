@@ -1,10 +1,13 @@
 package com.example.clearsky.model
 
-
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
-class CityResponseApi : ArrayList<CityResponseApi.CityResponseApiItem>(){
-    data class CityResponseApiItem(
+@Entity(tableName = "favorite_cities")
+data class CityResponseApi(
+        @PrimaryKey(autoGenerate = true)
+        val id: Int = 0,
         @SerializedName("country")
         val country: String?,
         @SerializedName("lat")
@@ -323,4 +326,3 @@ class CityResponseApi : ArrayList<CityResponseApi.CityResponseApiItem>(){
             val zu: String?
         )
     }
-}

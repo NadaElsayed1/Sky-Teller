@@ -38,6 +38,9 @@ android {
     buildFeatures{
         viewBinding = true
     }
+    buildFeatures {
+        dataBinding = true
+    }
 }
 
 dependencies {
@@ -52,6 +55,8 @@ dependencies {
     implementation ("androidx.room:room-runtime:2.6.1")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
+    implementation(libs.play.services.maps)
+    implementation(libs.androidx.recyclerview)
     kapt ("androidx.room:room-compiler:2.6.1")
     implementation ("androidx.activity:activity:1.9.3")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
@@ -62,6 +67,8 @@ dependencies {
     implementation ("com.google.code.gson:gson:2.11.0")
     implementation ("com.github.MatteoBattilana:WeatherView:3.0.0")
     implementation ("com.github.Dimezis:BlurView:version-2.0.3")
+    implementation ("org.osmdroid:osmdroid-android:6.1.13")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

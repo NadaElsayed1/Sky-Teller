@@ -16,12 +16,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Load HomeFragment by default
         if (savedInstanceState == null) {
             loadFragment(HomeFragment())
         }
 
-        // Setup BottomNavigationView
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
         bottomNavigationView.itemIconTintList =
             ContextCompat.getColorStateList(this, R.color.white)
@@ -37,7 +35,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Function to load the selected fragment
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)

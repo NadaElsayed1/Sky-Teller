@@ -1,41 +1,49 @@
 package com.example.clearsky.home.view
-
 import android.graphics.Color
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewOutlineProvider
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.clearsky.model.CurrentResponseApi
-import com.example.clearsky.model.ForecastResponseApi
+import com.bumptech.glide.Glide
 import com.example.clearsky.R
 import com.example.clearsky.databinding.FragmentHomeBinding
+import com.example.clearsky.db.WeatherLocalDataSource
 import com.example.clearsky.home.viewmodel.WeatherViewModel
+import com.example.clearsky.home.viewmodel.WeatherViewModelFactory
+import com.example.clearsky.model.ForecastResponseApi
+import com.example.clearsky.model.repository.WeatherRepository
+import com.example.clearsky.network.RemoteDataStructure
 import com.github.matteobattilana.weather.PrecipType
-import eightbitlab.com.blurview.RenderScriptBlur
-import retrofit2.Call
-import retrofit2.Response
 import java.text.SimpleDateFormat
 
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private val weatherViewModel: WeatherViewModel by lazy {
-        ViewModelProvider(requireActivity()).get(WeatherViewModel::class.java)
-    }
+private val weatherViewModel: WeatherViewModel by lazy {
+    // Initialize the repository with both remote and local data sources
+    val repository = WeatherRepository(RemoteDataStructure, WeatherLocalDataSource.getInstance(requireContext()))
+    // Create ViewModelFactory with the repository
+    val factory = WeatherViewModelFactory(repository)
+    // Get the WeatherViewModel using the factory
+    ViewModelProvider(this, factory)[WeatherViewModel::class.java]
+}
+
     private val calendar by lazy { Calendar.getInstance() }
     private val forecastHoursAdapter by lazy { ForecastHoursAdapter() }
     private val forecastDaysAdapter by lazy { ForecastDaysAdapter() }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -59,98 +67,76 @@ class HomeFragment : Fragment() {
             imageView5.visibility = View.VISIBLE
             imageView6.visibility = View.VISIBLE
 
-            weatherViewModel.loadCurrentWeather(lat, lon, "metric").enqueue(object : retrofit2.Callback<CurrentResponseApi> {
-                override fun onResponse(call: Call<CurrentResponseApi>, response: Response<CurrentResponseApi>) {
-                    if (response.isSuccessful) {
-                        val data = response.body()
-                        progressBar.visibility = View.GONE
-                        detailLayout.visibility = View.VISIBLE
-                        data?.let {
-                            statusTxt.text = it.weather?.get(0)?.main ?: "-"
-                            windTxt.text = it.wind?.speed?.let { Math.round(it).toString() } + "Km"
-                            humidityTxt.text = it.main?.humidity?.toString() + "%"
-                            val kelvinTemp = it.main?.temp ?: 0.0
-                            val celsiusTemp = kelvinTemp - 273.15
-                            currentTempTxt.text = it.main?.temp?.let { Math.round(celsiusTemp).toString() } + "°"
-                            maxTempTxt.text = Math.round(it.main?.tempMax?.let { it - 273.15 } ?: 0.0).toString() + "°"
-                            minTempTxt.text = Math.round(it.main?.tempMin?.let { it - 273.15 } ?: 0.0).toString() + "°"
+            // Observing current weather data
+            weatherViewModel.currentWeatherData.observe(viewLifecycleOwner) { data ->
+                progressBar.visibility = View.GONE
+                detailLayout.visibility = View.VISIBLE
+                data?.let {
+                    statusTxt.text = it.weather?.get(0)?.main ?: "-"
+                    windTxt.text = it.wind?.speed?.let { Math.round(it).toString() } + "Km"
+                    humidityTxt.text = it.main?.humidity?.toString() + "%"
+                    val kelvinTemp = it.main?.temp ?: 0.0
+                    val celsiusTemp = kelvinTemp - 273.15
+                    currentTempTxt.text =
+                        it.main?.temp?.let { Math.round(celsiusTemp).toString() } + "°"
+                    maxTempTxt.text =
+                        Math.round(it.main?.tempMax?.let { it - 273.15 } ?: 0.0).toString() + "°"
+                    minTempTxt.text =
+                        Math.round(it.main?.tempMin?.let { it - 273.15 } ?: 0.0).toString() + "°"
 
-                            val drawable = if (isNightNow()) R.drawable.night_bg else {
-                                setDynamicallyWallpaper(it.weather?.get(0)?.icon ?: "-")
-                            }
-                            bgImage.setImageResource(drawable)
-                            setEffectRainSnow(it.weather?.get(0)?.icon ?: "-")
-                        }
+                    Glide.with(requireContext())
+                        .load(data.weather?.get(0)?.icon)
+                        .placeholder(R.drawable.arrow_up)
+                        .into(imageView5)
+
+                    Glide.with(requireContext())
+                        .load(data.weather?.get(0)?.icon)
+                        .placeholder(R.drawable.arrow_down)
+                        .into(imageView6)
+
+                    val drawable = if (isNightNow()) R.drawable.night_bg else {
+                        setDynamicallyWallpaper(it.weather?.get(0)?.icon ?: "-")
                     }
+                    bgImage.setImageResource(drawable)
+                    setEffectRainSnow(it.weather?.get(0)?.icon ?: "-")
                 }
-
-                override fun onFailure(call: Call<CurrentResponseApi>, t: Throwable) {
-                    Toast.makeText(requireContext(), t.toString(), Toast.LENGTH_SHORT).show()
-                }
-            })
-
-            val radius = 10f
-            val decorView = activity?.window?.decorView
-            val rootView = decorView?.findViewById<ViewGroup>(android.R.id.content)
-            val windowBackground = decorView?.background
-
-            rootView?.let {
-                blurView.setupWith(it, RenderScriptBlur(requireContext()))
-                    .setFrameClearDrawable(windowBackground)
-                    .setBlurRadius(radius)
-                blurView.outlineProvider = ViewOutlineProvider.BACKGROUND
-                blurView.clipToOutline = true
             }
 
-            // Forecast for each 3 hours
-            weatherViewModel.loadForecastWeather(lat, lon, "metric").enqueue(object : retrofit2.Callback<ForecastResponseApi> {
-                override fun onResponse(call: Call<ForecastResponseApi>, response: Response<ForecastResponseApi>) {
-                    if (response.isSuccessful) {
-                        val data = response.body()
-                        blurView.visibility = View.VISIBLE
-                        data?.let {
-                            binding.rvForecast.apply {
-                                layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-                                adapter = forecastHoursAdapter
-                            }
-                            forecastHoursAdapter.differ.submitList(it.forecastList)
-                        }
-                    }
+            // Observing forecast data for each 3 hours
+            weatherViewModel.forecastWeatherData.observe(viewLifecycleOwner) { forecastList ->
+                blurView.visibility = View.VISIBLE
+                binding.rvForecast.apply {
+                    layoutManager =
+                        LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+                    adapter = forecastHoursAdapter
                 }
+                forecastHoursAdapter.differ.submitList(forecastList)
+            }
 
-                override fun onFailure(call: Call<ForecastResponseApi>, t: Throwable) {
-                    Toast.makeText(requireContext(), "Failed to load forecast data", Toast.LENGTH_SHORT).show()
+            // Observing forecast data for 5 days
+            weatherViewModel.forecastWeatherData.observe(viewLifecycleOwner) { forecastList ->
+                val uniqueDaysForecast = getUniqueDaysForecast(forecastList)
+
+                binding.fiveDayForecastRecyclerView.apply {
+                    layoutManager =
+                        LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+                    adapter = forecastDaysAdapter
                 }
-            })
-
-            // Forecast for 5 days
-            weatherViewModel.loadForecastWeather(lat, lon, "metric").enqueue(object : retrofit2.Callback<ForecastResponseApi> {
-                override fun onResponse(call: Call<ForecastResponseApi>, response: Response<ForecastResponseApi>) {
-                    if (response.isSuccessful) {
-                        val data = response.body()
-                        data?.let {
-                            val uniqueDaysForecast = getUniqueDaysForecast(it.forecastList)
-
-                            binding.fiveDayForecastRecyclerView.apply {
-                                layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-                                adapter = forecastDaysAdapter
-                            }
-                            forecastDaysAdapter.differ.submitList(uniqueDaysForecast)
-                        }
-                    }
-                }
-
-                override fun onFailure(call: Call<ForecastResponseApi>, t: Throwable) {
-                    Toast.makeText(requireContext(), "Failed to load 5 days forecast data", Toast.LENGTH_SHORT).show()
-                }
-            })
+                forecastDaysAdapter.differ.submitList(uniqueDaysForecast)
+            }
+            // Trigger data loading
+            weatherViewModel.fetchCurrentWeather(lat, lon, "metric")
+            weatherViewModel.fetchForecastWeather(lat, lon, "metric")
         }
+
     }
 
     private fun getUniqueDaysForecast(forecastList: List<ForecastResponseApi.Forecast>): List<ForecastResponseApi.Forecast> {
         val uniqueDaysMap = mutableMapOf<String, ForecastResponseApi.Forecast>()
         for (forecast in forecastList) {
-            val date = SimpleDateFormat("yyyy-MM-dd").format(SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(forecast.dtTxt))
+            val date = SimpleDateFormat("yyyy-MM-dd").format(
+                SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(forecast.dtTxt)
+            )
             if (!uniqueDaysMap.containsKey(date)) {
                 uniqueDaysMap[date] = forecast
             }
@@ -162,33 +148,30 @@ class HomeFragment : Fragment() {
 
     private fun setDynamicallyWallpaper(icon: String): Int {
         return when (icon.dropLast(1)) {
-            "01" -> {
-                initWeatherView(PrecipType.CLEAR)
-                R.drawable.snow_bg
-            }
-            "02", "03", "04" -> {
+            "01", "02", "03", "04", "13" -> {
                 initWeatherView(PrecipType.CLEAR)
                 R.drawable.cloudy_bg
             }
+
             "09", "10", "11" -> {
                 initWeatherView(PrecipType.CLEAR)
                 R.drawable.rainy_bg
             }
-            "13" -> {
-                initWeatherView(PrecipType.CLEAR)
-                R.drawable.snow_bg
-            }
+
             "50" -> {
                 initWeatherView(PrecipType.CLEAR)
                 R.drawable.haze_bg
             }
+
             else -> 0
         }
     }
 
     private fun setEffectRainSnow(icon: String) {
         when (icon.dropLast(1)) {
-            "01", "02", "03", "04", "09", "10", "11", "13", "50" -> initWeatherView(PrecipType.CLEAR)
+            "09", "10", "11" -> initWeatherView(PrecipType.RAIN)
+            "13" -> initWeatherView(PrecipType.SNOW)
+            else -> initWeatherView(PrecipType.CLEAR)
         }
     }
 
@@ -197,6 +180,7 @@ class HomeFragment : Fragment() {
             setWeatherData(type)
             angle = -20
             emissionRate = 100.0f
+            fadeOutPercent = 0.9f
         }
     }
 
