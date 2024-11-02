@@ -4,23 +4,24 @@ import com.example.clearsky.db.WeatherLocalDataSource
 import com.example.clearsky.model.CurrentResponseApi
 import com.example.clearsky.network.RemoteDataStructure
 
-class WeatherRepository(private val remoteDataStructure: RemoteDataStructure,private val localDataSource: WeatherLocalDataSource) {
+class WeatherRepository(private val remoteDataStructure: RemoteDataStructure, private val localDataSource: WeatherLocalDataSource) :
+    IWeatherRepository {
 
-    suspend fun getCurrentWeather(lat: Double, lng: Double, unit: String) =
-        remoteDataStructure.fetchCurrentWeather(lat, lng, unit)
+    override suspend fun getCurrentWeather(lat: Double, lng: Double, unit: String, lang: String) =
+        remoteDataStructure.fetchCurrentWeather(lat, lng, unit,lang)
 
-    suspend fun getForecastWeather(lat: Double, lng: Double, unit: String) =
-        remoteDataStructure.fetchForecastWeather(lat, lng, unit)
+    override suspend fun getForecastWeather(lat: Double, lng: Double, unit: String, lang: String) =
+        remoteDataStructure.fetchForecastWeather(lat, lng, unit,lang)
 
-    suspend fun getFavorites(): List<CurrentResponseApi> {
+    override suspend fun getFavorites(): List<CurrentResponseApi> {
         return localDataSource.getFavorites()
     }
 
-    fun addFavorite(city: CurrentResponseApi) {
+    override fun addFavorite(city: CurrentResponseApi) {
         localDataSource.addFavorite(city)
     }
 
-    fun removeFavorite(city: CurrentResponseApi) {
+    override fun removeFavorite(city: CurrentResponseApi) {
         localDataSource.removeFavorite(city)
     }
 }

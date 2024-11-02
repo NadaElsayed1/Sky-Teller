@@ -28,12 +28,12 @@ object RemoteDataStructure {
             .create(ApiService::class.java)
     }
 
-    suspend fun fetchCurrentWeather(lat: Double, lng: Double, unit: String): CurrentResponseApi {
-        return apiService.getCurrentWeather(lat, lng, unit, API_KEY)
+    suspend fun fetchCurrentWeather(lat: Double, lng: Double, unit: String, lang : String): CurrentResponseApi {
+        return apiService.getCurrentWeather(lat, lng, unit, API_KEY,lang)
     }
 
-    suspend fun fetchForecastWeather(lat: Double, lng: Double, unit: String): ForecastResponseApi {
-        return apiService.getForecastWeather(lat, lng, unit, API_KEY)
+    suspend fun fetchForecastWeather(lat: Double, lng: Double, unit: String, lang : String): ForecastResponseApi {
+        return apiService.getForecastWeather(lat, lng, unit, API_KEY,lang)
     }
 
     suspend fun fetchCityWeather(query:String,limit: Int): CityResponseApi {

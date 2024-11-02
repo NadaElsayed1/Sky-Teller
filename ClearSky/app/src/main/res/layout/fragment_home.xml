@@ -100,10 +100,10 @@
                 android:shadowDx="1"
                 android:shadowDy="1"
                 android:shadowRadius="3"
-                android:text="-Km"
+                android:text="@string/WindUnit"
                 android:textAlignment="center"
                 android:textColor="@color/white"
-                android:textSize="18dp" />
+                android:textSize="15dp" />
 
             <TextView
                 android:id="@+id/textView21"
@@ -113,7 +113,7 @@
                 android:shadowDx="1"
                 android:shadowDy="1"
                 android:shadowRadius="3"
-                android:text="Wind"
+                android:text="@string/WindName"
                 android:textAlignment="center"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
@@ -135,6 +135,7 @@
                 android:shadowRadius="3"
                 android:text="-"
                 android:textAlignment="center"
+                android:padding="8dp"
                 android:textColor="@color/white"
                 android:textSize="16sp" />
 
@@ -147,10 +148,10 @@
                 android:shadowDx="1"
                 android:shadowDy="1"
                 android:shadowRadius="3"
-                android:text="0"
+                android:text="@string/CurrentTemp"
                 android:textAlignment="center"
                 android:textColor="@color/white"
-                android:textSize="57dp" />
+                android:textSize="20dp" />
 
             <LinearLayout
                 android:id="@+id/arrows"
@@ -178,7 +179,7 @@
                     android:shadowRadius="3"
                     android:text="0"
                     android:textColor="@color/white"
-                    android:textSize="18sp" />
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/minTempTxt"
@@ -190,7 +191,7 @@
                     android:shadowRadius="3"
                     android:text="0"
                     android:textColor="@color/white"
-                    android:textSize="18sp" />
+                    android:textSize="15sp" />
 
                 <ImageView
                     android:id="@+id/imageView6"
@@ -224,10 +225,10 @@
                 android:shadowDx="1"
                 android:shadowDy="1"
                 android:shadowRadius="3"
-                android:text="-%"
+                android:text="@string/HumidityUnit"
                 android:textAlignment="center"
                 android:textColor="@color/white"
-                android:textSize="18dp" />
+                android:textSize="15dp" />
 
             <TextView
                 android:id="@+id/textView2"
@@ -237,7 +238,7 @@
                 android:shadowDx="1"
                 android:shadowDy="1"
                 android:shadowRadius="3"
-                android:text="Humidity"
+                android:text="@string/HumidityName"
                 android:textAlignment="center"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
@@ -248,7 +249,7 @@
         android:id="@+id/threeHourForecastLayout"
         android:layout_width="match_parent"
         android:layout_height="188dp"
-        android:layout_marginTop="170dp"
+        android:layout_marginTop="200dp"
         android:background="@drawable/forecast_bg"
         android:orientation="vertical"
         android:padding="8dp"
@@ -268,7 +269,7 @@
             android:shadowDx="1"
             android:shadowDy="1"
             android:shadowRadius="3"
-            android:text="Hourly Details"
+            android:text="@string/hoursection"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -316,7 +317,7 @@
         android:id="@+id/fiveDayForecastLayout"
         android:layout_width="match_parent"
         android:layout_height="240dp"
-        android:layout_marginTop="210dp"
+        android:layout_marginTop="260dp"
         android:background="@drawable/forecast_bg"
         android:orientation="vertical"
         android:padding="8dp"
@@ -328,11 +329,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center|left"
-            android:text="Next 5 Days"
             android:shadowColor="@color/black"
             android:shadowDx="1"
             android:shadowDy="1"
             android:shadowRadius="3"
+            android:text="@string/daysSection"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold" />

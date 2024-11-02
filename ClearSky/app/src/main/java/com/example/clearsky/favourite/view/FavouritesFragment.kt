@@ -77,9 +77,9 @@ class FavouritesFragment : Fragment() {
             val lon = data?.getDoubleExtra("lon", 0.0)
 
             if (lat != null && lon != null) {
-                weatherViewModel.fetchCurrentWeather(lat, lon, "metric")
+                weatherViewModel.fetchCurrentWeather(lat, lon, "metric", "en")
 
-                    weatherViewModel.currentWeatherData.observe(viewLifecycleOwner) { city ->
+                weatherViewModel.currentWeatherData.observe(viewLifecycleOwner) { city ->
                     // Add the fetched city to favorites after getting the weather data
                     weatherViewModel.addFavorite(city)
                 }

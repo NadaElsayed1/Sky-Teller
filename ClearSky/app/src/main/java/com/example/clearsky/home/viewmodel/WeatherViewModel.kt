@@ -32,10 +32,10 @@ class WeatherViewModel(private val repository: WeatherRepository) : ViewModel() 
         }
     }
     // Function to fetch current weather data
-    fun fetchCurrentWeather(lat: Double, lng: Double, unit: String) {
+    fun fetchCurrentWeather(lat: Double, lng: Double, unit: String, lang: String) {
         viewModelScope.launch {
             try {
-                val currentWeather = repository.getCurrentWeather(lat, lng, unit)
+                val currentWeather = repository.getCurrentWeather(lat, lng, unit, lang)
                 _currentWeatherData.postValue(currentWeather)
             } catch (e: Exception) {
                 Log.e("WeatherViewModel", "Error fetching current weather data: ${e.message}")
@@ -44,10 +44,10 @@ class WeatherViewModel(private val repository: WeatherRepository) : ViewModel() 
     }
 
     // Function to fetch forecast weather data
-    fun fetchForecastWeather(lat: Double, lng: Double, unit: String) {
+    fun fetchForecastWeather(lat: Double, lng: Double, unit: String, lang: String) {
         viewModelScope.launch {
             try {
-                val forecastWeather = repository.getForecastWeather(lat, lng, unit)
+                val forecastWeather = repository.getForecastWeather(lat, lng, unit, lang)
                 _forecastWeatherData.postValue(forecastWeather.forecastList)
             } catch (e: Exception) {
                 Log.e("WeatherViewModel", "Error fetching forecast weather data: ${e.message}")

@@ -9,26 +9,29 @@
     <TextView
         android:id="@+id/cityNameTextView"
         android:layout_width="0dp"
-        android:layout_weight="1"
         android:layout_height="wrap_content"
-        android:text="City Name"
-        android:textSize="18sp"
-        android:textColor="@android:color/black"/>
+        android:layout_weight="1"
+        android:text="@string/CityName"
+        android:textColor="@android:color/black"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/feelLike"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/feelLike"
+        android:textColor="@android:color/holo_blue_light"
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/temperatureTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="20°"
-        android:textSize="18sp"
-        android:textColor="@android:color/holo_blue_light"/>
+        android:layout_weight="1"
+        android:text="@string/temp"
+        android:textColor="@android:color/holo_blue_light"
+        android:textSize="18sp" />
 
-    <ImageButton
-        android:id="@+id/removeButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:contentDescription="Remove"
-        android:src="@android:drawable/ic_menu_delete"/>
 
 </LinearLayout>
