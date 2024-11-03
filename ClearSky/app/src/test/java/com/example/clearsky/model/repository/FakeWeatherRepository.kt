@@ -4,33 +4,21 @@ import com.example.clearsky.model.CurrentResponseApi
 import com.example.clearsky.model.ForecastResponseApi
 
 class FakeWeatherRepository : IWeatherRepository {
-    override suspend fun getCurrentWeather(
-        lat: Double,
-        lng: Double,
-        unit: String,
-        lang: String
-    ): CurrentResponseApi {
-        TODO("Not yet implemented")
+
+    var currentWeatherData: CurrentResponseApi? = null
+    var forecastWeatherData: ForecastResponseApi? = null
+
+    override suspend fun getCurrentWeather(lat: Double, lng: Double, unit: String, lang: String): CurrentResponseApi {
+        return currentWeatherData ?: throw Exception("Current weather data not set")
     }
 
-    override suspend fun getForecastWeather(
-        lat: Double,
-        lng: Double,
-        unit: String,
-        lang: String
-    ): ForecastResponseApi {
-        TODO("Not yet implemented")
+    override suspend fun getForecastWeather(lat: Double, lng: Double, unit: String, lang: String): ForecastResponseApi {
+        return forecastWeatherData ?: throw Exception("Forecast weather data not set")
     }
 
-    override suspend fun getFavorites(): List<CurrentResponseApi> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getFavorites(): List<CurrentResponseApi> = emptyList()
 
-    override fun addFavorite(city: CurrentResponseApi) {
-        TODO("Not yet implemented")
-    }
+    override fun addFavorite(city: CurrentResponseApi) {}
 
-    override fun removeFavorite(city: CurrentResponseApi) {
-        TODO("Not yet implemented")
-    }
+    override fun removeFavorite(city: CurrentResponseApi) {}
 }

@@ -99,7 +99,10 @@ dependencies {
     // AndroidX and Robolectric
     testImplementation("androidx.test.ext:junit-ktx:1.1.3")
     testImplementation("androidx.test:core-ktx:1.4.0")
-    testImplementation("org.robolectric:robolectric:4.5.1")
+//    testImplementation("org.robolectric:robolectric:4.5.1")
+//    testImplementation "junit:junit:4.13.2"
+    testImplementation ("org.robolectric:robolectric:4.13")
+
 
     // InstantTaskExecutorRule
     testImplementation("androidx.arch.core:core-testing:2.1.0")

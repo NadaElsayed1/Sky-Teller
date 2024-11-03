@@ -6,14 +6,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.clearsky.model.CityResponseApi
 import com.example.clearsky.model.CurrentResponseApi
 import com.example.clearsky.model.ForecastResponseApi
+import com.example.clearsky.model.repository.IWeatherRepository
 import com.example.clearsky.model.repository.WeatherRepository
 import kotlinx.coroutines.launch
 
 
-class WeatherViewModel(private val repository: WeatherRepository) : ViewModel() {
+class WeatherViewModel(private val repository: IWeatherRepository) : ViewModel() {
 
     private val _currentWeatherData = MutableLiveData<CurrentResponseApi>()
     val currentWeatherData: LiveData<CurrentResponseApi> get() = _currentWeatherData
