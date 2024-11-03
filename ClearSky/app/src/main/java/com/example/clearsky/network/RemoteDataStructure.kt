@@ -1,6 +1,4 @@
 package com.example.clearsky.network
-
-import com.example.clearsky.model.CityResponseApi
 import com.example.clearsky.model.CurrentResponseApi
 import com.example.clearsky.model.ForecastResponseApi
 import okhttp3.OkHttpClient
@@ -8,7 +6,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-object RemoteDataStructure {
+object RemoteDataStructure : IRemoteDataStructure {
 
     private const val BASE_URL = "https://api.openweathermap.org"
     private const val API_KEY = "9832068f1c229dbbef08a89208bb2d8f"
@@ -28,16 +26,14 @@ object RemoteDataStructure {
             .create(ApiService::class.java)
     }
 
-    suspend fun fetchCurrentWeather(lat: Double, lng: Double, unit: String, lang : String): CurrentResponseApi {
+    override suspend fun fetchCurrentWeather(lat: Double, lng: Double, unit: String, lang : String): CurrentResponseApi {
         return apiService.getCurrentWeather(lat, lng, unit, API_KEY,lang)
     }
 
-    suspend fun fetchForecastWeather(lat: Double, lng: Double, unit: String, lang : String): ForecastResponseApi {
+    override suspend fun fetchForecastWeather(lat: Double, lng: Double, unit: String, lang : String): ForecastResponseApi {
         return apiService.getForecastWeather(lat, lng, unit, API_KEY,lang)
     }
-
-    suspend fun fetchCityWeather(query:String,limit: Int): CityResponseApi {
-        return apiService.getCitiesList(query,limit, API_KEY)
-    }
-
 }
+//    suspend fun fetchCityWeather(query:String,limit: Int): CityResponseApi {
+//        return apiService.getCitiesList(query,limit, API_KEY)
+//    }

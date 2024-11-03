@@ -2,14 +2,13 @@ package com.example.clearsky.db
 
 import android.content.Context
 import androidx.lifecycle.LiveData
-import com.example.clearsky.model.CityResponseApi
 import com.example.clearsky.model.CurrentResponseApi
 import com.example.clearsky.model.ForecastResponseApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class WeatherLocalDataSource private constructor(context: Context) {
+class WeatherLocalDataSource private constructor(context: Context) : IWeatherLocalDataSource {
     private val weatherDao: WeatherDao
     val storedForecasts: LiveData<List<ForecastResponseApi>>
     val storedCurrentWeather: LiveData<List<CurrentResponseApi>>
@@ -32,32 +31,31 @@ class WeatherLocalDataSource private constructor(context: Context) {
         }
     }
 
-    fun insertForecasts(forecasts: List<ForecastResponseApi>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            weatherDao.insertWeatherForecast(forecasts)
-        }
-    }
-
-    fun deleteCurrentWeather(currentWeather: CurrentResponseApi) {
-        CoroutineScope(Dispatchers.IO).launch {
-            weatherDao.deleteWeather(currentWeather)
-        }
-    }
-
-    // New methods for managing favorites
-    suspend fun getFavorites(): List<CurrentResponseApi> {
+    override suspend fun getFavorites(): List<CurrentResponseApi> {
         return weatherDao.getFavorites()
     }
 
-    fun addFavorite(city: CurrentResponseApi) {
+    override fun addFavorite(city: CurrentResponseApi) {
         CoroutineScope(Dispatchers.IO).launch {
             weatherDao.addFavorite(city)
         }
     }
 
-    fun removeFavorite(city: CurrentResponseApi) {
+    override fun removeFavorite(city: CurrentResponseApi) {
         CoroutineScope(Dispatchers.IO).launch {
             weatherDao.removeFavorite(city)
         }
     }
 }
+
+//    fun insertForecasts(forecasts: List<ForecastResponseApi>) {
+//        CoroutineScope(Dispatchers.IO).launch {
+//            weatherDao.insertWeatherForecast(forecasts)
+//        }
+//    }
+//
+//    fun deleteCurrentWeather(currentWeather: CurrentResponseApi) {
+//        CoroutineScope(Dispatchers.IO).launch {
+//            weatherDao.deleteWeather(currentWeather)
+//        }
+//    }

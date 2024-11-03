@@ -4,22 +4,14 @@ import com.example.clearsky.db.WeatherLocalDataSource
 import com.example.clearsky.model.CurrentResponseApi
 import com.example.clearsky.model.ForecastResponseApi
 import com.example.clearsky.network.RemoteDataStructure
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
 import org.junit.Before
 import org.junit.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class WeatherRepositoryTest {
-
     private lateinit var weatherRepository: WeatherRepository
-    private val remoteDataStructure: RemoteDataStructure = mock()
-    private val localDataSource: WeatherLocalDataSource = mock()
 
     // Sample data for testing with all required fields
     private val sampleCurrentWeather = CurrentResponseApi(
@@ -116,17 +108,17 @@ class WeatherRepositoryTest {
         )
     )
 
+    private val remoteDataStructure = FakeRemoteDataStructure(sampleCurrentWeather, sampleForecastWeather)
+    private val localDataSource = FakeLocalDataSource(mutableListOf(sampleCurrentWeather))
+
     @Before
     fun setUp() {
-        // Initialize the repository with mocked data sources
+        // Initialize the repository with the fake data sources
         weatherRepository = WeatherRepository(remoteDataStructure, localDataSource)
     }
 
     @Test
     fun getCurrentWeather_returnsExpectedCurrentWeather() = runTest {
-        // Given: remote data source returns a predefined current weather response
-        whenever(remoteDataStructure.fetchCurrentWeather(any(), any(), any(), any())).thenReturn(sampleCurrentWeather)
-
         // When: calling getCurrentWeather on the repository
         val result = weatherRepository.getCurrentWeather(30.0444, 31.2357, "metric", "en")
 
@@ -136,9 +128,6 @@ class WeatherRepositoryTest {
 
     @Test
     fun getForecastWeather_returnsExpectedForecastWeather() = runTest {
-        // Given: remote data source returns a predefined forecast weather response
-        whenever(remoteDataStructure.fetchForecastWeather(any(), any(), any(), any())).thenReturn(sampleForecastWeather)
-
         // When: calling getForecastWeather on the repository
         val result = weatherRepository.getForecastWeather(30.0444, 31.2357, "metric", "en")
 
