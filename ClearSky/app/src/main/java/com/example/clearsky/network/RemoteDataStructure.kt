@@ -34,6 +34,3 @@ object RemoteDataStructure : IRemoteDataStructure {
         return apiService.getForecastWeather(lat, lng, unit, API_KEY,lang)
     }
 }
-//    suspend fun fetchCityWeather(query:String,limit: Int): CityResponseApi {
-//        return apiService.getCitiesList(query,limit, API_KEY)
-//    }

@@ -26,121 +26,78 @@ import com.github.matteobattilana.weather.PrecipType
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-
 class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private lateinit var sharedPreferences: SharedPreferences
-//    private lateinit var sharedViewModel: SharedViewModel
 
     private val weatherViewModel: WeatherViewModel by lazy {
-        // Initialize the repository with both remote and local data sources
         val repository = WeatherRepository(RemoteDataStructure, WeatherLocalDataSource.getInstance(requireContext()))
-        // Create ViewModelFactory with the repository
         val factory = WeatherViewModelFactory(repository)
-        // Get the WeatherViewModel using the factory
         ViewModelProvider(this, factory)[WeatherViewModel::class.java]
+    }
+    companion object {
+        private const val MAP_REQUEST_CODE = 100
     }
 
     private val calendar by lazy { Calendar.getInstance() }
     private val forecastHoursAdapter by lazy { ForecastHoursAdapter() }
     private val forecastDaysAdapter by lazy { ForecastDaysAdapter() }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         sharedPreferences = requireContext().getSharedPreferences("SettingsPrefs", Context.MODE_PRIVATE)
+        val currentLocation = sharedPreferences.getString("currentLocation", null)
+        currentLocation?.let {
+            val latLong = it.split(",")
+            val latitude = latLong[0].toDouble()
+            val longitude = latLong[1].toDouble()}
         applyPreferences()
         setupSharedPreferencesListener()
-        return binding.root    }
+        return binding.root
+    }
+
     private fun applyPreferences() {
-        /*set init state*/
         val tempUnit = sharedPreferences.getString("tempUnit", "Celsius") ?: "Celsius"
         val language = sharedPreferences.getString("language", "Default") ?: "Default"
         val windSpeedUnit = sharedPreferences.getString("windSpeedUnit", "meter/sec") ?: "meter/sec"
 
-        // Update ui
         updateTemperatureUnit(tempUnit)
         updateLanguage(language)
         updateWindSpeedUnit(windSpeedUnit)
     }
 
     private fun updateTemperatureUnit(unit: String) {
-        val currentTemperature = 22.0
-        binding.currentTempTxt.text = convertTemperature(currentTemperature, unit)
-
-//        when (unit) {
-//            "Celsius" -> {
-//                val currentTemperatureInCelsius = currentTemperatureInKelvin - 273.15
-//                binding.currentTempTxt.text = String.format("%.1f °C", currentTemperatureInCelsius)
-//            }
-//            "Kelvin" -> {
-//                binding.currentTempTxt.text = String.format("%.1f K", currentTemperatureInKelvin)
-//            }
-//            "Fahrenheit" -> {
-//                val currentTemperatureInFahrenheit = ((currentTemperatureInKelvin -273.15 )* 9/5) + 32
-//                binding.currentTempTxt.text = String.format("%.1f °F", currentTemperatureInFahrenheit)
-//            }
-//        }
+        binding.currentTempTxt.text = weatherViewModel.currentWeatherData.value?.let {
+            convertTemperature(it.main?.temp ?: 0.0, unit)
+        } ?: "Data not available"
     }
 
     private fun updateLanguage(language: String) {
-        when (language) {
-            "Arabic" -> {
-                Locale.setDefault(Locale("ar"))
-            }
-            "English" -> {
-                Locale.setDefault(Locale("en"))
-            }
-            else -> {
-                Locale.setDefault(Locale.getDefault())
-            }
-        }
+        Locale.setDefault(Locale(language))
         updateUIWithCurrentLanguage()
     }
 
     private fun updateWindSpeedUnit(unit: String) {
         val currentWindSpeed = 5.0
-        binding.windTxt.text = convertWindSpeed(currentWindSpeed,unit)
-//        when (unit) {
-//            "meter/sec" -> {
-//                binding.windTxt.text = String.format("%.1f m/s", currentWindSpeed)
-//            }
-//            "mile/hour" -> {
-//                val windSpeedInMph = currentWindSpeed * 2.23694
-//                binding.windTxt.text = String.format("%.1f mph", windSpeedInMph)
-//            }
-//        }
+        binding.windTxt.text = convertWindSpeed(currentWindSpeed, unit)
     }
-    private fun updateUIWithCurrentLanguage() {
-        // Implement logic to refresh any static UI text to apply the language changes
-    }
+
+    private fun updateUIWithCurrentLanguage() {}
 
     private fun setupSharedPreferencesListener() {
         sharedPreferences.registerOnSharedPreferenceChangeListener { sharedPrefs, key ->
             when (key) {
-                "tempUnit" -> {
-                    val tempUnit = sharedPrefs.getString(key, "Celsius") ?: "Celsius"
-                    updateTemperatureUnit(tempUnit)
-                }
-                "language" -> {
-                    val language = sharedPrefs.getString(key, "Default") ?: "Default"
-                    updateLanguage(language)
-                }
-                "windSpeedUnit" -> {
-                    val windSpeedUnit = sharedPrefs.getString(key, "meter/sec") ?: "meter/sec"
-                    updateWindSpeedUnit(windSpeedUnit)
-                }
+                "tempUnit" -> updateTemperatureUnit(sharedPrefs.getString(key, "Celsius") ?: "Celsius")
+                "language" -> updateLanguage(sharedPrefs.getString(key, "Default") ?: "Default")
+                "windSpeedUnit" -> updateWindSpeedUnit(sharedPrefs.getString(key, "meter/sec") ?: "meter/sec")
             }
         }
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-//        sharedViewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
 
         activity?.window?.apply {
             addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
@@ -149,31 +106,29 @@ class HomeFragment : Fragment() {
         }
 
         binding.apply {
-            val lat = 30.0444
-            val lon = 31.2357
-            val name = "Cairo"
+            val lat = sharedPreferences.getFloat("lat", 30.0444f)
+            val lon = sharedPreferences.getFloat("lon", 31.2357f)
+            val name = sharedPreferences.getString("name", "Cairo") ?: "Cairo"
 
-
-            // Use the coordinates as needed
-            weatherViewModel.fetchCurrentWeather(lat, lon, "metric", "en")
+            weatherViewModel.fetchCurrentWeather(lat.toDouble(), lon.toDouble(), "metric", "en")
             cityTxt.text = name
+            weatherViewModel.fetchForecastWeather(lat.toDouble(), lon.toDouble(), "metric", "en")
+
             progressBar.visibility = View.VISIBLE
             imageView5.visibility = View.VISIBLE
             imageView6.visibility = View.VISIBLE
 
-            // Retrieve the user's temperature and wind speed unit preferences
             val tempUnit = sharedPreferences.getString("tempUnit", "Celsius") ?: "Celsius"
             val windSpeedUnit = sharedPreferences.getString("windSpeedUnit", "meter/sec") ?: "meter/sec"
             val language = sharedPreferences.getString("language", "en") ?: "en"
 
-            // Observing current weather data
             weatherViewModel.currentWeatherData.observe(viewLifecycleOwner) { data ->
                 progressBar.visibility = View.GONE
                 detailLayout.visibility = View.VISIBLE
                 data?.let {
                     statusTxt.text = it.weather?.get(0)?.main ?: "-"
                     windTxt.text = convertWindSpeed(it.wind?.speed ?: 0.0, windSpeedUnit)
-                    humidityTxt.text = it.main?.humidity?.toString() + "%"
+                    humidityTxt.text = "${it.main?.humidity}%"
                     currentTempTxt.text = convertTemperature(it.main?.temp ?: 0.0, tempUnit)
                     maxTempTxt.text = convertTemperature(it.main?.tempMax ?: 0.0, tempUnit)
                     minTempTxt.text = convertTemperature(it.main?.tempMin ?: 0.0, tempUnit)
@@ -196,7 +151,6 @@ class HomeFragment : Fragment() {
                 }
             }
 
-            // Observing forecast data for each 3 hours
             weatherViewModel.forecastWeatherData.observe(viewLifecycleOwner) { forecastList ->
                 blurView.visibility = View.VISIBLE
                 binding.rvForecast.apply {
@@ -206,7 +160,6 @@ class HomeFragment : Fragment() {
                 forecastHoursAdapter.differ.submitList(forecastList)
             }
 
-            // Observing forecast data for 5 days
             weatherViewModel.forecastWeatherData.observe(viewLifecycleOwner) { forecastList ->
                 val uniqueDaysForecast = getUniqueDaysForecast(forecastList)
 
@@ -217,23 +170,15 @@ class HomeFragment : Fragment() {
                 forecastDaysAdapter.differ.submitList(uniqueDaysForecast)
             }
 
-            // Trigger data loading with preference-based units
-            weatherViewModel.fetchCurrentWeather(lat, lon, if (tempUnit == "Celsius") "metric" else "imperial", language)
-            weatherViewModel.fetchForecastWeather(lat, lon, if (tempUnit == "Celsius") "metric" else "imperial", language)
-//            sharedViewModel.location.observe(viewLifecycleOwner) { location ->
-//                val (lat, lon) = location
-//                weatherViewModel.fetchCurrentWeather(lat, lon, if (tempUnit == "Celsius") "metric" else "imperial", language)
-//                weatherViewModel.fetchForecastWeather(lat, lon, if (tempUnit == "Celsius") "metric" else "imperial", language)
-////                weatherViewModel.fetchCurrentWeather(lat, lon, "metric", "en")
-//            }
+            weatherViewModel.fetchCurrentWeather(lat.toDouble(), lon.toDouble(), if (tempUnit == "Celsius") "metric" else "imperial", language)
+            weatherViewModel.fetchForecastWeather(lat.toDouble(), lon.toDouble(), if (tempUnit == "Celsius") "metric" else "imperial", language)
         }
     }
-
     private fun convertTemperature(kelvinTemp: Double, unit: String): String {
         return when (unit) {
-            "Celsius" -> String.format("%.1f", kelvinTemp - 273.15)
-            "Fahrenheit" -> String.format("%.1f", (kelvinTemp - 273.15) * 9/5 + 32)
-            else -> String.format("%.1f K", kelvinTemp)
+            "Celsius" -> String.format("%.1f°C", kelvinTemp)
+            "Fahrenheit" -> String.format("%.1f°F", (kelvinTemp) * 9/5 + 32)
+            else -> String.format("%.1fK", kelvinTemp + 273.15)
         }
     }
 
@@ -243,7 +188,6 @@ class HomeFragment : Fragment() {
             else -> String.format("%.1f m/s", speed)
         }
     }
-
 
     private fun getUniqueDaysForecast(forecastList: List<ForecastResponseApi.Forecast>): List<ForecastResponseApi.Forecast> {
         val uniqueDaysMap = mutableMapOf<String, ForecastResponseApi.Forecast>()
@@ -266,17 +210,14 @@ class HomeFragment : Fragment() {
                 initWeatherView(PrecipType.CLEAR)
                 R.drawable.cloudy_bg
             }
-
             "09", "10", "11" -> {
                 initWeatherView(PrecipType.CLEAR)
                 R.drawable.rainy_bg
             }
-
             "50" -> {
                 initWeatherView(PrecipType.CLEAR)
                 R.drawable.haze_bg
             }
-
             else -> 0
         }
     }

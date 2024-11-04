@@ -38,4 +38,6 @@
     <string name="meter_sec">meter/sec</string>
     <string name="mile_hour">mile/hour</string>
     <string name="feelLike">"Feels Like: "</string>
+    <string name="Alert">Alert</string>
+    <string name="NotificationOnly">Notification</string>
 </resources>

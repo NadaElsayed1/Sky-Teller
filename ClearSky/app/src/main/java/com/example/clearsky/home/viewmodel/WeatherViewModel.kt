@@ -21,17 +21,7 @@ class WeatherViewModel(private val repository: IWeatherRepository) : ViewModel()
     private val _forecastWeatherData = MutableLiveData<List<ForecastResponseApi.Forecast>>()
     val forecastWeatherData: LiveData<List<ForecastResponseApi.Forecast>> get() = _forecastWeatherData
 
-    // LiveData for favorites
-    private val _favorites = MutableLiveData<List<CurrentResponseApi>>()
-    val favorites: LiveData<List<CurrentResponseApi>> get() = _favorites
 
-    fun fetchFavorites() {
-        viewModelScope.launch {
-            val favoritesList = repository.getFavorites()
-            _favorites.postValue(favoritesList)
-        }
-    }
-    // Function to fetch current weather data
     fun fetchCurrentWeather(lat: Double, lng: Double, unit: String, lang: String) {
         viewModelScope.launch {
             try {
@@ -43,7 +33,6 @@ class WeatherViewModel(private val repository: IWeatherRepository) : ViewModel()
         }
     }
 
-    // Function to fetch forecast weather data
     fun fetchForecastWeather(lat: Double, lng: Double, unit: String, lang: String) {
         viewModelScope.launch {
             try {
@@ -51,33 +40,6 @@ class WeatherViewModel(private val repository: IWeatherRepository) : ViewModel()
                 _forecastWeatherData.postValue(forecastWeather.forecastList)
             } catch (e: Exception) {
                 Log.e("WeatherViewModel", "Error fetching forecast weather data: ${e.message}")
-            }
-        }
-    }
-//    fun getFavorites(): List<CurrentResponseApi> {
-//        return repository.getFavorites() // Make sure this method returns a List<CurrentResponseApi>
-//    }
-//     Function to add a city to favorites
-    fun addFavorite(city: CurrentResponseApi) {
-        viewModelScope.launch {
-            try {
-                repository.addFavorite(city)
-            } catch (e: Exception) {
-                Log.e("FavoriteViewModel", "Error adding favorite city: ${e.message}")
-            }
-        }
-    }
-//fun addFavorite(city: CurrentResponseApi) {
-//    repository.addFavorite(city) // Ensure this method exists in the repository
-//}
-
-    // Function to remove a city from favorites
-    fun removeFavorite(city: CurrentResponseApi) {
-        viewModelScope.launch {
-            try {
-                repository.removeFavorite(city)
-            } catch (e: Exception) {
-                Log.e("FavoriteViewModel", "Error removing favorite city: ${e.message}")
             }
         }
     }

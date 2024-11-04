@@ -28,7 +28,6 @@ class ForecastDaysAdapter : RecyclerView.Adapter<ForecastDaysAdapter.ViewHolder>
         val calendar = Calendar.getInstance()
         calendar.time = date
 
-        // Day of the week
         val dayOfWeekName = when (calendar.get(Calendar.DAY_OF_WEEK)) {
             Calendar.SUNDAY -> "Sun"
             Calendar.MONDAY -> "Mon"
@@ -40,7 +39,7 @@ class ForecastDaysAdapter : RecyclerView.Adapter<ForecastDaysAdapter.ViewHolder>
             else -> "-"
         }
         binding.tvDayName.text = dayOfWeekName
-        val kelvinToCelsius = { kelvin: Double -> Math.round(kelvin - 273.15).toString() }
+        val kelvinToCelsius = { kelvin: Double -> Math.round(kelvin).toString() }
 
         binding.tvMaxTemp.text = "Max: ${kelvinToCelsius(forecast.main.tempMax)}°C"
         binding.tvMinTemp.text = "Min: ${kelvinToCelsius(forecast.main.tempMin)}°C"
@@ -49,7 +48,6 @@ class ForecastDaysAdapter : RecyclerView.Adapter<ForecastDaysAdapter.ViewHolder>
 
     override fun getItemCount() = differ.currentList.size
 
-    // Define differ and its callback
     private val differCallback = object : DiffUtil.ItemCallback<ForecastResponseApi.Forecast>() {
         override fun areItemsTheSame(oldItem: ForecastResponseApi.Forecast, newItem: ForecastResponseApi.Forecast): Boolean {
             return oldItem.dt == newItem.dt

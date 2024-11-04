@@ -6,8 +6,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.clearsky.favourite.view.FavouritesFragment
 import com.example.clearsky.home.view.HomeFragment
-import com.example.clearsky.notifications.NotificationsFragment
-import com.example.clearsky.setting.SettingsFragment
+import com.example.clearsky.notifications.view.NotificationsFragment
+import com.example.clearsky.setting.view.SettingsFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {

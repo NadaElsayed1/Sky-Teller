@@ -47,15 +47,3 @@ class WeatherLocalDataSource private constructor(context: Context) : IWeatherLoc
         }
     }
 }
-
-//    fun insertForecasts(forecasts: List<ForecastResponseApi>) {
-//        CoroutineScope(Dispatchers.IO).launch {
-//            weatherDao.insertWeatherForecast(forecasts)
-//        }
-//    }
-//
-//    fun deleteCurrentWeather(currentWeather: CurrentResponseApi) {
-//        CoroutineScope(Dispatchers.IO).launch {
-//            weatherDao.deleteWeather(currentWeather)
-//        }
-//    }

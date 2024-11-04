@@ -1,6 +1,7 @@
 package com.example.clearsky.favourite.view
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,17 +12,22 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.example.clearsky.R
 import com.example.clearsky.databinding.FragmentFavouritesBinding
 import com.example.clearsky.home.viewmodel.WeatherViewModel
 import com.example.clearsky.home.viewmodel.WeatherViewModelFactory
 import com.example.clearsky.model.CurrentResponseApi
 import com.example.clearsky.db.WeatherLocalDataSource
+import com.example.clearsky.favourite.viewmodel.FavoriteViewModel
+import com.example.clearsky.favourite.viewmodel.FavouriteViewModelFactory
+import com.example.clearsky.home.view.HomeFragment
 import com.example.clearsky.model.repository.WeatherRepository
 import com.example.clearsky.network.RemoteDataStructure
 
 class FavouritesFragment : Fragment() {
     private var _binding: FragmentFavouritesBinding? = null
     private val binding get() = _binding!!
+    private lateinit var favoriteViewModel: FavoriteViewModel
     private lateinit var weatherViewModel: WeatherViewModel
     private lateinit var favoriteAdapter: FavoriteAdapter
 
@@ -36,12 +42,13 @@ class FavouritesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize ViewModel
         val repository = WeatherRepository(RemoteDataStructure, WeatherLocalDataSource.getInstance(requireContext()))
-        val factory = WeatherViewModelFactory(repository)
-        weatherViewModel = ViewModelProvider(this, factory)[WeatherViewModel::class.java]
+        val factoryf = FavouriteViewModelFactory(repository)
+        favoriteViewModel = ViewModelProvider(this, factoryf)[FavoriteViewModel::class.java]
 
-        // Setup RecyclerView and Adapter
+        val factoryw = WeatherViewModelFactory(repository)
+        weatherViewModel = ViewModelProvider(this, factoryw)[WeatherViewModel::class.java]
+
         favoriteAdapter = FavoriteAdapter { city ->
             navigateToHome(city)
         }
@@ -51,25 +58,20 @@ class FavouritesFragment : Fragment() {
             adapter = favoriteAdapter
         }
 
-        // Observe favorites
-        weatherViewModel.favorites.observe(viewLifecycleOwner) { favorites ->
+        favoriteViewModel.favorites.observe(viewLifecycleOwner) { favorites ->
             favoriteAdapter.submitList(favorites)
         }
 
-        // Setup swipe to delete
         setupSwipeToDelete(binding.recyclerView)
 
-        // Add favorite button
         binding.fabAddFavorite.setOnClickListener {
             val intent = Intent(requireContext(), MapActivity::class.java)
             startActivityForResult(intent, REQUEST_CODE_MAP)
         }
 
-        // Fetch favorites when the fragment is created
-        weatherViewModel.fetchFavorites()
+        favoriteViewModel.fetchFavorites()
     }
 
-    // Handle the result from MapActivity
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_MAP && resultCode == Activity.RESULT_OK) {
@@ -80,13 +82,11 @@ class FavouritesFragment : Fragment() {
                 weatherViewModel.fetchCurrentWeather(lat, lon, "metric", "en")
 
                 weatherViewModel.currentWeatherData.observe(viewLifecycleOwner) { city ->
-                    // Add the fetched city to favorites after getting the weather data
-                    weatherViewModel.addFavorite(city)
+                    favoriteViewModel.addFavorite(city)
                 }
             }
         }
     }
-
 
     private fun setupSwipeToDelete(recyclerView: RecyclerView) {
         val swipeHandler = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
@@ -99,8 +99,7 @@ class FavouritesFragment : Fragment() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 val city = favoriteAdapter.currentList[position]
-                weatherViewModel.removeFavorite(city)
-                // The favorites list will automatically update through LiveData observer.
+                favoriteViewModel.removeFavorite(city)
             }
         }
         val itemTouchHelper = ItemTouchHelper(swipeHandler)
@@ -108,7 +107,18 @@ class FavouritesFragment : Fragment() {
     }
 
     private fun navigateToHome(city: CurrentResponseApi) {
-        // Code to navigate to HomeFragment with the city data
+        val sharedPreferences = requireContext().getSharedPreferences("SettingsPrefs", Context.MODE_PRIVATE)
+        with(sharedPreferences.edit()) {
+            putFloat("lat", city.coord.lat.toFloat())
+            putFloat("lon", city.coord.lon.toFloat())
+            putString("name", city.name)
+            apply()
+        }
+
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, HomeFragment())
+            .addToBackStack(null)
+            .commit()
     }
 
     override fun onDestroyView() {
@@ -117,6 +127,6 @@ class FavouritesFragment : Fragment() {
     }
 
     companion object {
-        private const val REQUEST_CODE_MAP = 1 // Define request code
+        private const val REQUEST_CODE_MAP = 1
     }
 }

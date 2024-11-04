@@ -25,12 +25,10 @@ class ForecastHoursAdapter : RecyclerView.Adapter<ForecastHoursAdapter.ViewHolde
         val forecast = differ.currentList[position]
         val binding = holder.binding
 
-        // Format date and time
         val date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(forecast.dtTxt)
         val calendar = Calendar.getInstance()
         calendar.time = date
 
-        // Day of the week
         val dayOfWeekName = when (calendar.get(Calendar.DAY_OF_WEEK)) {
             Calendar.SUNDAY -> "Sun"
             Calendar.MONDAY -> "Mon"
@@ -43,19 +41,16 @@ class ForecastHoursAdapter : RecyclerView.Adapter<ForecastHoursAdapter.ViewHolde
         }
         binding.nameDayTxt.text = dayOfWeekName
 
-        // Time (AM/PM)
         val hour = calendar.get(Calendar.HOUR)
         val amPm = if (calendar.get(Calendar.AM_PM) == Calendar.AM) "am" else "pm"
         binding.hourTxt.text = "$hour$amPm"
 
-        // Temperature
-        val kelvinToCelsius = { kelvin: Double -> Math.round(kelvin - 273.15).toString() }
+        val kelvinToCelsius = { kelvin: Double -> Math.round(kelvin).toString() }
 
         val temperature = forecast.main?.temp?.let {
             "${kelvinToCelsius(it)}°" } ?: "-"
         binding.tempTxt.text = temperature
 
-        // Icon
         val icon = when (forecast.weather.getOrNull(0)?.icon) {
             "01d", "01n" -> "sunny"
             "02d", "02n" -> "cloudy_sunny"

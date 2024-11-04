@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -19,16 +19,31 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ClearSky"
         tools:targetApi="31">
-        <receiver android:name=".notifications.NotificationReceiver" />
+        <activity
+            android:name=".setting.view.MapSettingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".notifications.view.AlertActivity"
+            android:theme="@style/AlertDialogTheme"
+            android:exported="false" />
 
-<!--        <receiver android:name=".alerts.AlertReceiver" />-->
+        <receiver
+            android:name=".notifications.reciever.AlarmReceiver"
+            android:enabled="true"
+            android:exported="true" />
+
+        <receiver
+            android:name=".notifications.reciever.NotificationReceiver"
+            android:enabled="true"
+            android:exported="true" />
 
         <activity
             android:name=".favourite.view.MapActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
