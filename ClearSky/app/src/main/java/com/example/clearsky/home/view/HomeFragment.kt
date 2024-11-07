@@ -68,14 +68,17 @@ class HomeFragment : Fragment() {
     }
 
     private fun updateTemperatureUnit(unit: String) {
-        binding.currentTempTxt.text = weatherViewModel.currentWeatherData.value?.let {
-            convertTemperature(it.main?.temp ?: 0.0, unit)
-        } ?: "Data not available"
+        weatherViewModel.currentWeatherData.value?.let { data ->
+            binding.currentTempTxt.text = convertTemperature(data.main?.temp ?: 0.0, unit)
+            binding.feelsLikeTxt.text = convertTemperature(data.main?.feelsLike ?: 0.0, unit)  // Feels like temperature
+        } ?: run {
+            binding.currentTempTxt.text = "Data not available"
+            binding.feelsLikeTxt.text = "Data not available"
+        }
     }
 
     private fun updateLanguage(language: String) {
         Locale.setDefault(Locale(language))
-        updateUIWithCurrentLanguage()
     }
 
     private fun updateWindSpeedUnit(unit: String) {
@@ -83,7 +86,6 @@ class HomeFragment : Fragment() {
         binding.windTxt.text = convertWindSpeed(currentWindSpeed, unit)
     }
 
-    private fun updateUIWithCurrentLanguage() {}
 
     private fun setupSharedPreferencesListener() {
         sharedPreferences.registerOnSharedPreferenceChangeListener { sharedPrefs, key ->
@@ -132,6 +134,10 @@ class HomeFragment : Fragment() {
                     currentTempTxt.text = convertTemperature(it.main?.temp ?: 0.0, tempUnit)
                     maxTempTxt.text = convertTemperature(it.main?.tempMax ?: 0.0, tempUnit)
                     minTempTxt.text = convertTemperature(it.main?.tempMin ?: 0.0, tempUnit)
+                    feelsLikeTxt.text = getString(R.string.feelslike)
+                    feelsLikevalue.text = convertTemperature(it.main?.feelsLike ?: 0.0, tempUnit)
+                    pressureTxt.text = getString(R.string.pressure)
+                    pressurevalue.text = "${it.main?.pressure ?: 0} hPa"
 
                     Glide.with(requireContext())
                         .load(data.weather?.get(0)?.icon)

@@ -40,4 +40,8 @@
     <string name="feelLike">"Feels Like: "</string>
     <string name="Alert">Alert</string>
     <string name="NotificationOnly">Notification</string>
+    <string name="feelslike">"Feels Like: "</string>
+    <string name="pressure">"Pressure: "</string>
+    <string name="pressureValue">val</string>
+    <string name="feelval">val</string>
 </resources>

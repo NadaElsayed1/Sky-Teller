@@ -1,6 +1,5 @@
 package com.example.clearsky.network
 
-import com.example.clearsky.model.CityResponseApi
 import com.example.clearsky.model.CurrentResponseApi
 import com.example.clearsky.model.ForecastResponseApi
 import retrofit2.http.GET
@@ -26,10 +25,4 @@ interface ApiService {
         @Query("lang") language: String
     ): ForecastResponseApi
 
-    @GET("geo/1.0/direct")
-    suspend fun getCitiesList(
-        @Query("q") q: String,
-        @Query("limit") limit: Int,
-        @Query("appid") apiKey: String
-    ): CityResponseApi
 }

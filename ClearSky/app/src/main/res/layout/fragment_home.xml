@@ -18,6 +18,71 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:srcCompat="@drawable/sunny_bg" />
 
+    <TextView
+        android:id="@+id/feelsLikeTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="5dp"
+        android:shadowColor="@color/black"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="3"
+        android:text="@string/feelslike"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/cityTxt" />
+
+    <TextView
+        android:id="@+id/feelsLikevalue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:shadowColor="@color/black"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="3"
+        android:text="@string/feelval"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@id/feelsLikeTxt"
+        app:layout_constraintTop_toTopOf="@id/feelsLikeTxt" />
+
+    <TextView
+        android:id="@+id/pressureTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="2dp"
+        android:shadowColor="@color/black"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="3"
+        android:text="@string/pressure"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/feelsLikeTxt" />
+
+    <TextView
+        android:id="@+id/pressurevalue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:shadowColor="@color/black"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="3"
+        android:text="@string/pressureValue"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintStart_toEndOf="@id/pressureTxt"
+        app:layout_constraintTop_toTopOf="@id/pressureTxt" />
+
+
     <com.github.matteobattilana.weather.WeatherView
         android:id="@+id/weatherView"
         android:layout_width="match_parent"
@@ -179,7 +244,7 @@
                     android:shadowRadius="3"
                     android:text="0"
                     android:textColor="@color/white"
-                    android:textSize="15sp" />
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/minTempTxt"
@@ -191,12 +256,12 @@
                     android:shadowRadius="3"
                     android:text="0"
                     android:textColor="@color/white"
-                    android:textSize="15sp" />
+                    android:textSize="12sp" />
 
                 <ImageView
                     android:id="@+id/imageView6"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="31dp"
                     android:layout_gravity="center"
                     android:layout_marginStart="8dp"
                     tools:srcCompat="@drawable/arrow_down" />
@@ -317,7 +382,7 @@
         android:id="@+id/fiveDayForecastLayout"
         android:layout_width="match_parent"
         android:layout_height="240dp"
-        android:layout_marginTop="260dp"
+        android:layout_marginTop="220dp"
         android:background="@drawable/forecast_bg"
         android:orientation="vertical"
         android:padding="8dp"

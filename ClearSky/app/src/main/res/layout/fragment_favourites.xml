@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/babyBlue"
     tools:context=".favourite.view.FavouritesFragment">
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -22,10 +23,11 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="398dp"
-        android:layout_height="626dp"
+        android:layout_width="340dp"
+        android:layout_height="591dp"
         android:layout_margin="16dp"
         android:layout_marginTop="16dp"
+        android:background="@color/babyBlue"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"

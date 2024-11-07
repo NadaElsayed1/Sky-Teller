@@ -39,4 +39,9 @@
     <string name="feelLike">"يشعر وكأنه: "</string>
     <string name="Alert">تنبيه</string>
     <string name="NotificationOnly">إشعار</string>
+    <string name="feelslike">"يبدوا وكأنه: "</string>
+    <string name="pressure">الضغط: </string>
+    <string name="pressureValue">القيمة</string>
+    <string name="feelval">القيمة</string>
+
 </resources>
