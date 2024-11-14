@@ -13,7 +13,7 @@ interface ApiService {
         @Query("lon") lon: Double,
         @Query("units") unit: String,
         @Query("appid") apiKey: String,
-        @Query("lang") language: String
+        @Query("lang") language: String,
     ): CurrentResponseApi
 
     @GET("data/2.5/forecast")
@@ -22,7 +22,7 @@ interface ApiService {
         @Query("lon") lon: Double,
         @Query("units") unit: String,
         @Query("appid") apiKey: String,
-        @Query("lang") language: String
+        @Query("lang") language: String,
     ): ForecastResponseApi
 
 }

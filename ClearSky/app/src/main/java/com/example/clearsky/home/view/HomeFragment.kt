@@ -1,32 +1,44 @@
 package com.example.clearsky.home.view
 
+import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.icu.util.Calendar
+import android.location.LocationManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.clearsky.R
+import com.example.clearsky.SharedViewModel
 import com.example.clearsky.databinding.FragmentHomeBinding
 import com.example.clearsky.db.WeatherLocalDataSource
 import com.example.clearsky.home.viewmodel.WeatherViewModel
 import com.example.clearsky.home.viewmodel.WeatherViewModelFactory
+import com.example.clearsky.model.CurrentResponseApi
 import com.example.clearsky.model.ForecastResponseApi
 import com.example.clearsky.model.repository.WeatherRepository
 import com.example.clearsky.network.RemoteDataStructure
+import com.example.clearsky.setting.view.SettingsFragment.Companion.LOCATION_PERMISSION_REQUEST_CODE
 import com.github.matteobattilana.weather.PrecipType
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 class HomeFragment : Fragment() {
+
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private lateinit var sharedPreferences: SharedPreferences
@@ -36,32 +48,58 @@ class HomeFragment : Fragment() {
         val factory = WeatherViewModelFactory(repository)
         ViewModelProvider(this, factory)[WeatherViewModel::class.java]
     }
-    companion object {
-        private const val MAP_REQUEST_CODE = 100
-    }
 
     private val calendar by lazy { Calendar.getInstance() }
     private val forecastHoursAdapter by lazy { ForecastHoursAdapter() }
     private val forecastDaysAdapter by lazy { ForecastDaysAdapter() }
 
+    private val sharedPreferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPrefs, key ->
+        when (key) {
+            "tempUnit" -> updateTemperatureUnit(sharedPrefs.getString(key, "Celsius") ?: "Celsius")
+            "language" -> updateLanguage(sharedPrefs.getString(key, "en") ?: "en")
+            "windSpeedUnit" -> updateWindSpeedUnit(sharedPrefs.getString(key, "meter/sec") ?: "meter/sec")
+            "location" -> {
+                val locationSetting = sharedPrefs.getString("location", "GPS")
+                if (locationSetting == "GPS") {
+//                    requestGpsLocationUpdate()
+                    initializeUI()
+                } else {
+                    val lat = sharedPrefs.getFloat("lat", 30.0444f).toDouble()
+                    val lon = sharedPrefs.getFloat("lon", 31.2357f).toDouble()
+                    val cityName = sharedPrefs.getString("name", "Cairo")
+                    binding.cityTxt.text = cityName
+                    observeWeatherData(lat, lon)
+                }
+            }
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         sharedPreferences = requireContext().getSharedPreferences("SettingsPrefs", Context.MODE_PRIVATE)
-        val currentLocation = sharedPreferences.getString("currentLocation", null)
-        currentLocation?.let {
-            val latLong = it.split(",")
-            val latitude = latLong[0].toDouble()
-            val longitude = latLong[1].toDouble()}
-        applyPreferences()
-        setupSharedPreferencesListener()
+        val isFirstLaunch = sharedPreferences.getBoolean("isFirstLaunch", true)
+        if (isFirstLaunch) {
+            with(sharedPreferences.edit()) {
+                putFloat("lat", 30.0444f)
+                putFloat("lon", 31.2357f)
+                putString("name", "Cairo")
+                putBoolean("isFirstLaunch", false)
+                apply()
+            }
+        }
+        setupPreferences()
         return binding.root
+    }
+
+    private fun setupPreferences() {
+        applyPreferences()
+        sharedPreferences.registerOnSharedPreferenceChangeListener(sharedPreferenceChangeListener)
     }
 
     private fun applyPreferences() {
         val tempUnit = sharedPreferences.getString("tempUnit", "Celsius") ?: "Celsius"
-        val language = sharedPreferences.getString("language", "Default") ?: "Default"
+        val language = sharedPreferences.getString("language", "en") ?: "en"
         val windSpeedUnit = sharedPreferences.getString("windSpeedUnit", "meter/sec") ?: "meter/sec"
-
         updateTemperatureUnit(tempUnit)
         updateLanguage(language)
         updateWindSpeedUnit(windSpeedUnit)
@@ -70,10 +108,10 @@ class HomeFragment : Fragment() {
     private fun updateTemperatureUnit(unit: String) {
         weatherViewModel.currentWeatherData.value?.let { data ->
             binding.currentTempTxt.text = convertTemperature(data.main?.temp ?: 0.0, unit)
-            binding.feelsLikeTxt.text = convertTemperature(data.main?.feelsLike ?: 0.0, unit)  // Feels like temperature
+            binding.feelsLikeTxt.text = convertTemperature(data.main?.feelsLike ?: 0.0, unit)
         } ?: run {
-            binding.currentTempTxt.text = "Data not available"
-            binding.feelsLikeTxt.text = "Data not available"
+//            binding.currentTempTxt.text = getString(R.string.data_unavailable)
+//            binding.feelsLikeTxt.text = getString(R.string.data_unavailable)
         }
     }
 
@@ -86,125 +124,153 @@ class HomeFragment : Fragment() {
         binding.windTxt.text = convertWindSpeed(currentWindSpeed, unit)
     }
 
-
-    private fun setupSharedPreferencesListener() {
-        sharedPreferences.registerOnSharedPreferenceChangeListener { sharedPrefs, key ->
-            when (key) {
-                "tempUnit" -> updateTemperatureUnit(sharedPrefs.getString(key, "Celsius") ?: "Celsius")
-                "language" -> updateLanguage(sharedPrefs.getString(key, "Default") ?: "Default")
-                "windSpeedUnit" -> updateWindSpeedUnit(sharedPrefs.getString(key, "meter/sec") ?: "meter/sec")
+    private fun requestGpsLocationUpdate() {
+        val locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            val location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            location?.let {
+                observeWeatherData(it.latitude, it.longitude)
             }
+        } else {
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
         }
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupStatusBar()
+        initializeUI()
+        observeWeatherDataFromPreferences()
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == MAP_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val latitude = data?.getDoubleExtra("lat", 0.0) ?: return
+            val longitude = data?.getDoubleExtra("lon", 0.0) ?: return
 
+            sharedPreferences.edit {
+                putFloat("lat", latitude.toFloat())
+                putFloat("lon", longitude.toFloat())
+                putString("name", "Unknown")
+            }
+
+            observeWeatherData(latitude, longitude)
+        }
+    }
+    private fun setupStatusBar() {
         activity?.window?.apply {
             addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
             statusBarColor = Color.TRANSPARENT
             WindowInsetsControllerCompat(this, decorView).isAppearanceLightStatusBars = true
         }
+    }
 
+    private fun initializeUI() {
         binding.apply {
-            val lat = sharedPreferences.getFloat("lat", 30.0444f)
-            val lon = sharedPreferences.getFloat("lon", 31.2357f)
-            val name = sharedPreferences.getString("name", "Cairo") ?: "Cairo"
-
-            weatherViewModel.fetchCurrentWeather(lat.toDouble(), lon.toDouble(), "metric", "en")
-            cityTxt.text = name
-            weatherViewModel.fetchForecastWeather(lat.toDouble(), lon.toDouble(), "metric", "en")
-
-            progressBar.visibility = View.VISIBLE
-            imageView5.visibility = View.VISIBLE
-            imageView6.visibility = View.VISIBLE
-
-            val tempUnit = sharedPreferences.getString("tempUnit", "Celsius") ?: "Celsius"
-            val windSpeedUnit = sharedPreferences.getString("windSpeedUnit", "meter/sec") ?: "meter/sec"
-            val language = sharedPreferences.getString("language", "en") ?: "en"
-
-            weatherViewModel.currentWeatherData.observe(viewLifecycleOwner) { data ->
-                progressBar.visibility = View.GONE
-                detailLayout.visibility = View.VISIBLE
-                data?.let {
-                    statusTxt.text = it.weather?.get(0)?.main ?: "-"
-                    windTxt.text = convertWindSpeed(it.wind?.speed ?: 0.0, windSpeedUnit)
-                    humidityTxt.text = "${it.main?.humidity}%"
-                    currentTempTxt.text = convertTemperature(it.main?.temp ?: 0.0, tempUnit)
-                    maxTempTxt.text = convertTemperature(it.main?.tempMax ?: 0.0, tempUnit)
-                    minTempTxt.text = convertTemperature(it.main?.tempMin ?: 0.0, tempUnit)
-                    feelsLikeTxt.text = getString(R.string.feelslike)
-                    feelsLikevalue.text = convertTemperature(it.main?.feelsLike ?: 0.0, tempUnit)
-                    pressureTxt.text = getString(R.string.pressure)
-                    pressurevalue.text = "${it.main?.pressure ?: 0} hPa"
-
-                    Glide.with(requireContext())
-                        .load(data.weather?.get(0)?.icon)
-                        .placeholder(R.drawable.arrow_up)
-                        .into(imageView5)
-
-                    Glide.with(requireContext())
-                        .load(data.weather?.get(0)?.icon)
-                        .placeholder(R.drawable.arrow_down)
-                        .into(imageView6)
-
-                    val drawable = if (isNightNow()) R.drawable.night_bg else {
-                        setDynamicallyWallpaper(it.weather?.get(0)?.icon ?: "-")
-                    }
-                    bgImage.setImageResource(drawable)
-                    setEffectRainSnow(it.weather?.get(0)?.icon ?: "-")
-                }
-            }
-
-            weatherViewModel.forecastWeatherData.observe(viewLifecycleOwner) { forecastList ->
-                blurView.visibility = View.VISIBLE
-                binding.rvForecast.apply {
-                    layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-                    adapter = forecastHoursAdapter
-                }
-                forecastHoursAdapter.differ.submitList(forecastList)
-            }
-
-            weatherViewModel.forecastWeatherData.observe(viewLifecycleOwner) { forecastList ->
-                val uniqueDaysForecast = getUniqueDaysForecast(forecastList)
-
-                binding.fiveDayForecastRecyclerView.apply {
-                    layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-                    adapter = forecastDaysAdapter
-                }
-                forecastDaysAdapter.differ.submitList(uniqueDaysForecast)
-            }
-
-            weatherViewModel.fetchCurrentWeather(lat.toDouble(), lon.toDouble(), if (tempUnit == "Celsius") "metric" else "imperial", language)
-            weatherViewModel.fetchForecastWeather(lat.toDouble(), lon.toDouble(), if (tempUnit == "Celsius") "metric" else "imperial", language)
+            val lat = sharedPreferences.getFloat("lat", 30.0444f).toDouble()
+            val lon = sharedPreferences.getFloat("lon", 31.2357f).toDouble()
+            val cityName = sharedPreferences.getString("name", "Cairo") ?: "Cairo"
+            cityTxt.text = cityName
+            setupForecastRecyclerViews()
+            observeWeatherData(lat, lon)
         }
     }
-    private fun convertTemperature(kelvinTemp: Double, unit: String): String {
+    private fun observeWeatherData(lat: Double, lon: Double) {
+        val tempUnit = sharedPreferences.getString("tempUnit", "Celsius") ?: "Celsius"
+        val language = sharedPreferences.getString("language", "en") ?: "en"
+
+        weatherViewModel.fetchCurrentWeather(lat, lon, if (tempUnit == "Celsius") "metric" else "imperial", language)
+        weatherViewModel.fetchForecastWeather(lat, lon, if (tempUnit == "Celsius") "metric" else "imperial", language)
+
+        weatherViewModel.currentWeatherData.observe(viewLifecycleOwner) { data ->
+            data?.let {
+                binding.progressBar.visibility = View.GONE
+                binding.detailLayout.visibility = View.VISIBLE
+                updateWeatherUI(it)
+            }
+        }
+
+        weatherViewModel.forecastWeatherData.observe(viewLifecycleOwner) { forecastList ->
+            binding.blurView.visibility = View.VISIBLE
+            forecastHoursAdapter.differ.submitList(forecastList)
+            forecastDaysAdapter.differ.submitList(getUniqueDaysForecast(forecastList))
+        }
+    }
+
+    private fun observeWeatherDataFromPreferences() {
+        val lat = sharedPreferences.getFloat("lat", 30.0444f).toDouble()
+        val lon = sharedPreferences.getFloat("lon", 31.2357f).toDouble()
+        observeWeatherData(lat, lon)
+    }
+
+    private fun updateWeatherUI(data: CurrentResponseApi) {
+        val tempUnit = sharedPreferences.getString("tempUnit", "Celsius") ?: "Celsius"
+        val windSpeedUnit = sharedPreferences.getString("windSpeedUnit", "meter/sec") ?: "meter/sec"
+
+        binding.apply {
+            statusTxt.text = data.weather?.get(0)?.main ?: "-"
+            windTxt.text = convertWindSpeed(data.wind?.speed ?: 0.0, windSpeedUnit)
+            humidityTxt.text = "${data.main?.humidity}%"
+            currentTempTxt.text = convertTemperature(data.main?.temp ?: 0.0, tempUnit)
+            maxTempTxt.text = convertTemperature(data.main?.tempMax ?: 0.0, tempUnit)
+            minTempTxt.text = convertTemperature(data.main?.tempMin ?: 0.0, tempUnit)
+            feelsLikevalue.text = convertTemperature(data.main?.feelsLike ?: 0.0, tempUnit)
+            pressurevalue.text = String.format("${data.main?.pressure ?: 0} %s", getString(R.string.unit_pressure))
+
+//            Glide.with(requireContext())
+//                .load(data.weather?.get(0)?.icon)
+//                .placeholder(R.drawable.arrow_up)
+//                .into(imageView5)
+//
+//            Glide.with(requireContext())
+//                .load(data.weather?.get(0)?.icon)
+//                .placeholder(R.drawable.arrow_down)
+//                .into(imageView6)
+
+            val backgroundRes = if (isNightNow()) R.drawable.night_bg else setDynamicallyWallpaper(data.weather?.get(0)?.icon ?: "-")
+            bgImage.setImageResource(backgroundRes)
+            setEffectRainSnow(data.weather?.get(0)?.icon ?: "-")
+        }
+    }
+
+    private fun setupForecastRecyclerViews() {
+        binding.rvForecast.apply {
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            adapter = forecastHoursAdapter
+        }
+
+        binding.fiveDayForecastRecyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+            adapter = forecastDaysAdapter
+        }
+    }
+
+    //need update
+    private fun convertTemperature(celsiusTemp: Double, unit: String): String {
         return when (unit) {
-            "Celsius" -> String.format("%.1f°C", kelvinTemp)
-            "Fahrenheit" -> String.format("%.1f°F", (kelvinTemp) * 9/5 + 32)
-            else -> String.format("%.1fK", kelvinTemp + 273.15)
+            "Celsius" -> String.format("%.1f %s", celsiusTemp, getString(R.string.unit_celsius))
+            "Fahrenheit" -> String.format("%.1f %s", (celsiusTemp * 9 / 5) + 32, getString(R.string.unit_fahrenheit))
+            else -> String.format("%.1f %s", celsiusTemp + 273.15, getString(R.string.unit_kelvin))
         }
     }
 
     private fun convertWindSpeed(speed: Double, unit: String): String {
         return when (unit) {
-            "mile/hour" -> String.format("%.1f m/h", speed * 2.23694)
-            else -> String.format("%.1f m/s", speed)
+            "mile/hour" -> String.format("%.1f %s", speed * 2.23694, getString(R.string.unit_mile_per_hour))
+            else -> String.format("%.1f %s", speed, getString(R.string.unit_meter_per_sec))
         }
     }
 
     private fun getUniqueDaysForecast(forecastList: List<ForecastResponseApi.Forecast>): List<ForecastResponseApi.Forecast> {
         val uniqueDaysMap = mutableMapOf<String, ForecastResponseApi.Forecast>()
-        for (forecast in forecastList) {
-            val date = SimpleDateFormat("yyyy-MM-dd").format(
-                SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(forecast.dtTxt)
-            )
-            if (!uniqueDaysMap.containsKey(date)) {
-                uniqueDaysMap[date] = forecast
-            }
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+        forecastList.forEach { forecast ->
+            val date = dateFormat.format(dateTimeFormat.parse(forecast.dtTxt))
+            uniqueDaysMap[date] = forecast
         }
+
         return uniqueDaysMap.values.take(5)
     }
 
@@ -212,42 +278,28 @@ class HomeFragment : Fragment() {
 
     private fun setDynamicallyWallpaper(icon: String): Int {
         return when (icon.dropLast(1)) {
-            "01", "02", "03", "04", "13" -> {
-                initWeatherView(PrecipType.CLEAR)
-                R.drawable.cloudy_bg
-            }
-            "09", "10", "11" -> {
-                initWeatherView(PrecipType.CLEAR)
-                R.drawable.rainy_bg
-            }
-            "50" -> {
-                initWeatherView(PrecipType.CLEAR)
-                R.drawable.haze_bg
-            }
-            else -> 0
+            "01", "02", "03", "04" -> R.drawable.haze_bg
+             "13", "50" -> R.drawable.night_bg
+            "09", "10" -> R.drawable.rainy_bg
+            "11" -> R.drawable.haze_bg
+            else -> R.drawable.night_bg
         }
     }
 
     private fun setEffectRainSnow(icon: String) {
         when (icon.dropLast(1)) {
-            "09", "10", "11" -> initWeatherView(PrecipType.RAIN)
-            "13" -> initWeatherView(PrecipType.SNOW)
-            else -> initWeatherView(PrecipType.CLEAR)
-        }
-    }
-
-    private fun initWeatherView(type: PrecipType) {
-        binding.weatherView.apply {
-            setWeatherData(type)
-            angle = -20
-            emissionRate = 100.0f
-            fadeOutPercent = 0.9f
+            "09", "10" -> binding.weatherView.setWeatherData(PrecipType.RAIN)
+            "13" -> binding.weatherView.setWeatherData(PrecipType.SNOW)
+            else -> binding.weatherView.setWeatherData(PrecipType.CLEAR)
         }
     }
 
     override fun onDestroyView() {
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(sharedPreferenceChangeListener)
         super.onDestroyView()
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener { _, _ -> }
         _binding = null
+    }
+    companion object {
+        private const val MAP_REQUEST_CODE = 1
     }
 }

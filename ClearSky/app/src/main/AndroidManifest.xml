@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
 
     <application
         android:allowBackup="true"
@@ -25,12 +27,16 @@
         <activity
             android:name=".notifications.view.AlertActivity"
             android:theme="@style/AlertDialogTheme"
-            android:exported="false" />
+            android:launchMode="singleTask"
+            android:exported="false"/>
 
-        <receiver
-            android:name=".notifications.reciever.AlarmReceiver"
+        <receiver android:name=".notifications.reciever.AlarmReceiver"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true">
+        <intent-filter>
+            <action android:name="STOP_ALARM_SOUND"/>
+        </intent-filter>
+        </receiver>
 
         <receiver
             android:name=".notifications.reciever.NotificationReceiver"

@@ -40,7 +40,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/Arabic"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    app:buttonTint="@color/darkyellow"/>
 
                 <RadioButton
                     android:id="@+id/rbEnglish"
@@ -48,15 +49,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="@string/English"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    app:buttonTint="@color/darkyellow"/>
 
-                <RadioButton
-                    android:id="@+id/rbDefaultLanguage"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/Default"
-                    android:textColor="@color/white" />
             </RadioGroup>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -65,7 +60,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:cardBackgroundColor="@color/blue">
+        app:cardBackgroundColor="@color/bluerbutton">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -94,7 +89,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/Celsius"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    app:buttonTint="@color/darkyellow"/>
 
                 <RadioButton
                     android:id="@+id/rbKelvin"
@@ -102,7 +98,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="@string/Kelvin"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    app:buttonTint="@color/darkyellow"/>
 
                 <RadioButton
                     android:id="@+id/rbFahrenheit"
@@ -110,7 +107,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="@string/Fahrenheit"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    app:buttonTint="@color/darkyellow"/>
             </RadioGroup>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -147,7 +145,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/GPS"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    app:buttonTint="@color/darkyellow"/>
 
                 <RadioButton
                     android:id="@+id/rbMap"
@@ -155,7 +154,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="@string/Map"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    app:buttonTint="@color/darkyellow"/>
             </RadioGroup>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -191,7 +191,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/meter_sec"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    app:buttonTint="@color/darkyellow"/>
 
                 <RadioButton
                     android:id="@+id/rbMileHour"
@@ -199,7 +200,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="@string/mile_hour"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    app:buttonTint="@color/darkyellow"/>
             </RadioGroup>
         </LinearLayout>
     </androidx.cardview.widget.CardView>

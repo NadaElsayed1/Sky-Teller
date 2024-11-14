@@ -1,12 +1,15 @@
 package com.example.clearsky.notifications.view
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.clearsky.R
+import com.example.clearsky.notifications.reciever.AlarmReceiver
 
 class AlertActivity : AppCompatActivity() {
 
@@ -24,6 +27,7 @@ class AlertActivity : AppCompatActivity() {
 
         val dismissButton = findViewById<Button>(R.id.dismissButton)
         dismissButton.setOnClickListener {
+            AlarmReceiver.stopAlarm()
             finish()
         }
 

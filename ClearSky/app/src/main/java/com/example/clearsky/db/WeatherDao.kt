@@ -8,26 +8,18 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.clearsky.model.CurrentResponseApi
 import com.example.clearsky.model.ForecastResponseApi
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WeatherDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertWeatherForecast(weatherList: List<ForecastResponseApi>)
-
     @Query("SELECT * FROM weather_forecast WHERE city = :cityName")
-    fun getWeatherForecast(cityName: String): LiveData<List<ForecastResponseApi>>
+    fun getWeatherForecast(cityName: String): Flow<List<ForecastResponseApi>>
 
     @Query("SELECT * FROM current_weather WHERE name = :cityName")
-    fun getWeatherByCity(cityName: String): LiveData<List<CurrentResponseApi>>
-
-    @Query("SELECT * FROM current_weather WHERE coord = :coord")
-    fun getWeatherByCoordinates(coord: String): LiveData<List<CurrentResponseApi>>
-
-    @Delete
-    fun deleteWeather(weatherList: CurrentResponseApi)
+    fun getWeatherByCity(cityName: String): Flow<List<CurrentResponseApi>>
 
     @Query("SELECT * FROM current_weather")
-    suspend fun getFavorites(): List<CurrentResponseApi>
+    fun getFavorites(): Flow<List<CurrentResponseApi>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addFavorite(city: CurrentResponseApi)

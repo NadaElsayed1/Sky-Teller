@@ -22,9 +22,7 @@ class NotificationAdapter(private val notifications: MutableList<NotificationCar
     override fun onBindViewHolder(holder: NotificationViewHolder, position: Int) {
         val notification = notifications[position]
         holder.textView.text = "From: ${notification.startDate} ${notification.startTime}\n" +
-                "To: ${notification.endDate} ${notification.endTime}\n" +
-                "Type: ${notification.notificationType}"
-    }
+                "To: ${notification.endDate} ${notification.endTime}\n" }
 
     override fun getItemCount(): Int {
         return notifications.size

@@ -6,10 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.clearsky.home.viewmodel.WeatherViewModel
 import com.example.clearsky.model.CurrentResponseApi
 import com.example.clearsky.model.repository.IWeatherRepository
-import com.example.clearsky.model.repository.WeatherRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class FavoriteViewModel(private val repository: IWeatherRepository) : ViewModel() {
@@ -18,8 +17,10 @@ class FavoriteViewModel(private val repository: IWeatherRepository) : ViewModel(
 
     fun fetchFavorites() {
         viewModelScope.launch {
-            val favoritesList = repository.getFavorites()
-            _favorites.postValue(favoritesList)
+            repository.getFavorites().collect{ favoritesList ->
+                Log.d("FavoriteViewModel", "Favorites list updated: $favoritesList")
+                _favorites.postValue(favoritesList)
+            }
         }
     }
 
@@ -27,6 +28,7 @@ class FavoriteViewModel(private val repository: IWeatherRepository) : ViewModel(
         viewModelScope.launch {
             try {
                 repository.addFavorite(city)
+                _favorites.postValue(repository.getFavorites().first())
             } catch (e: Exception) {
                 Log.e("FavoriteViewModel", "Error adding favorite city: ${e.message}")
             }
@@ -37,6 +39,7 @@ class FavoriteViewModel(private val repository: IWeatherRepository) : ViewModel(
         viewModelScope.launch {
             try {
                 repository.removeFavorite(city)
+                _favorites.postValue(repository.getFavorites().first())
             } catch (e: Exception) {
                 Log.e("FavoriteViewModel", "Error removing favorite city: ${e.message}")
             }

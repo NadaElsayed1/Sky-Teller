@@ -1,41 +1,47 @@
 package com.example.clearsky.setting.view
 
+import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.clearsky.R
-import com.example.clearsky.databinding.FragmentSettingsBinding
-import java.util.Locale
-import android.location.LocationManager
-import androidx.core.app.ActivityCompat
-import android.Manifest
-import android.app.Activity
-import androidx.core.content.ContextCompat
-import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.edit
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import com.example.clearsky.R
+import com.example.clearsky.SharedViewModel
+import com.example.clearsky.databinding.FragmentSettingsBinding
 import com.example.clearsky.home.view.HomeFragment
 import com.example.clearsky.setting.viewmodel.SettingsViewModel
 import com.example.clearsky.setting.viewmodel.SettingsViewModelFactory
+import java.util.Locale
+
 
 class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var locationManager: LocationManager
+    //android KTX(to write the code at concise way) SettingsViewModel by viewModels{factory instance}
     private val settingsViewModel: SettingsViewModel by viewModels { SettingsViewModelFactory(sharedPreferences) }
 
-    private val LOCATION_PERMISSION_REQUEST_CODE = 1000
     private val MAP_REQUEST_CODE = 2000
-
+    companion object {
+        const val LOCATION_PERMISSION_REQUEST_CODE = 1000
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -45,7 +51,9 @@ class SettingsFragment : Fragment() {
 
         settingsViewModel.currentLocation.observe(viewLifecycleOwner, Observer { location ->
             location?.let {
-                sharedPreferences.edit().putString("currentLocation", "${it.latitude},${it.longitude}").apply()
+                //android KTX(to write the code at concise way)
+                //sharedPreferences.edit().putString("currentLocation", "${it.latitude},${it.longitude}").apply()
+                sharedPreferences.edit { putString("currentLocation", "${it.latitude},${it.longitude}") }
             }
         })
 
@@ -58,11 +66,11 @@ class SettingsFragment : Fragment() {
     private fun setupListeners() {
         binding.languageRadioGroup.setOnCheckedChangeListener { _, checkedId ->
             val language = when (checkedId) {
-                R.id.rbArabic -> "Arabic"
-                R.id.rbEnglish -> "English"
-                else -> "Default"
+                R.id.rbArabic -> "ar"
+                R.id.rbEnglish -> "en"
+                else -> "en"
             }
-            sharedPreferences.edit().putString("language", language).apply()
+            sharedPreferences.edit { putString("language", language) }
             setLocale(language)
         }
 
@@ -78,11 +86,11 @@ class SettingsFragment : Fragment() {
         binding.locationRadioGroup.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 R.id.rbGPS -> {
-                    sharedPreferences.edit().putString("location", "GPS").apply()
+                    sharedPreferences.edit(){putString("location", "GPS")}
                     requestCurrentLocation()
                 }
                 R.id.rbMap -> {
-                    sharedPreferences.edit().putString("location", "Map").apply()
+                    sharedPreferences.edit(){putString("location", "Map")}
                     openMap()
                 }
             }
@@ -120,7 +128,13 @@ class SettingsFragment : Fragment() {
             }
         }
     }
-
+    private fun navigateToHome() {
+        val homeFragment = HomeFragment()
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, homeFragment)
+            .addToBackStack(null)
+            .commit()
+    }
     private fun getCurrentLocation() {
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             showEnableGPSDialog()
@@ -132,12 +146,22 @@ class SettingsFragment : Fragment() {
         } else {
             null
         }
-
         location?.let {
-            settingsViewModel.saveCurrentLocation(it)
+            updateLocationData(it)
         } ?: run {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10f, locationListener)
         }
+    }
+    private fun updateLocationData(location: Location) {
+        val geocoder = Geocoder(requireContext(), Locale.getDefault())
+        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+        val cityName = addresses?.firstOrNull()?.locality ?: "Unknown"
+        sharedPreferences.edit {
+            putFloat("lat", location.latitude.toFloat())
+            putFloat("lon", location.longitude.toFloat())
+            putString("name", cityName)
+        }
+        navigateToHome()
     }
 
     private fun showEnableGPSDialog() {
@@ -167,8 +191,8 @@ class SettingsFragment : Fragment() {
 
     private fun setLocale(localeName: String) {
         val locale = when (localeName) {
-            "Arabic" -> Locale("ar")
-            "English" -> Locale("en")
+            "ar" -> Locale("ar")
+            "en" -> Locale("en")
             else -> Locale.getDefault()
         }
         Locale.setDefault(locale)
@@ -179,10 +203,9 @@ class SettingsFragment : Fragment() {
     }
 
     private fun loadPreferences() {
-        val language = sharedPreferences.getString("language", "Default")
-        binding.rbDefaultLanguage.isChecked = language == "Default"
-        binding.rbArabic.isChecked = language == "Arabic"
-        binding.rbEnglish.isChecked = language == "English"
+        val language = sharedPreferences.getString("language", "en")
+        binding.rbArabic.isChecked = language == "ar"
+        binding.rbEnglish.isChecked = language == "en"
 
         val tempUnit = sharedPreferences.getString("tempUnit", "Celsius")
         binding.rbCelsius.isChecked = tempUnit == "Celsius"
@@ -203,16 +226,15 @@ class SettingsFragment : Fragment() {
         if (requestCode == MAP_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val latitude = data?.getDoubleExtra("lat", 0.0) ?: 0.0
             val longitude = data?.getDoubleExtra("lon", 0.0) ?: 0.0
-            settingsViewModel.saveCurrentLocation(Location("").apply {
-                this.latitude = latitude
-                this.longitude = longitude
-            })
+            val cityName = data?.getStringExtra("name") ?: "Unknown"
 
-            val homeFragment = HomeFragment()
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, homeFragment)
-                .addToBackStack(null)
-                .commit()
+            sharedPreferences.edit {
+                putFloat("lat", latitude.toFloat())
+                putFloat("lon", longitude.toFloat())
+                putString("name", cityName)
+            }
+
+            navigateToHome()
         }
     }
 

@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.clearsky.R
 import com.example.clearsky.model.ForecastResponseApi
 import com.example.clearsky.databinding.ForecastItemBinding
 import java.text.SimpleDateFormat
@@ -30,25 +31,28 @@ class ForecastHoursAdapter : RecyclerView.Adapter<ForecastHoursAdapter.ViewHolde
         calendar.time = date
 
         val dayOfWeekName = when (calendar.get(Calendar.DAY_OF_WEEK)) {
-            Calendar.SUNDAY -> "Sun"
-            Calendar.MONDAY -> "Mon"
-            Calendar.TUESDAY -> "Tue"
-            Calendar.WEDNESDAY -> "Wed"
-            Calendar.THURSDAY -> "Thu"
-            Calendar.FRIDAY -> "Fri"
-            Calendar.SATURDAY -> "Sat"
+            Calendar.SUNDAY -> binding.root.context.getString(R.string.sunday)
+            Calendar.MONDAY -> binding.root.context.getString(R.string.monday)
+            Calendar.TUESDAY -> binding.root.context.getString(R.string.tuesday)
+            Calendar.WEDNESDAY -> binding.root.context.getString(R.string.wednesday)
+            Calendar.THURSDAY -> binding.root.context.getString(R.string.thursday)
+            Calendar.FRIDAY -> binding.root.context.getString(R.string.friday)
+            Calendar.SATURDAY -> binding.root.context.getString(R.string.saturday)
             else -> "-"
         }
         binding.nameDayTxt.text = dayOfWeekName
 
         val hour = calendar.get(Calendar.HOUR)
-        val amPm = if (calendar.get(Calendar.AM_PM) == Calendar.AM) "am" else "pm"
-        binding.hourTxt.text = "$hour$amPm"
+        val amPm = if (calendar.get(Calendar.AM_PM) == Calendar.AM)
+            binding.root.context.getString(R.string.am)
+        else
+            binding.root.context.getString(R.string.pm)
+        binding.hourTxt.text = "$hour $amPm"
 
         val kelvinToCelsius = { kelvin: Double -> Math.round(kelvin).toString() }
 
         val temperature = forecast.main?.temp?.let {
-            "${kelvinToCelsius(it)}°" } ?: "-"
+            "${kelvinToCelsius(it)}°C" } ?: "-"
         binding.tempTxt.text = temperature
 
         val icon = when (forecast.weather.getOrNull(0)?.icon) {

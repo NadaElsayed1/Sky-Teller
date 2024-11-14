@@ -13,7 +13,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.clearsky.R
 import com.example.clearsky.databinding.ActivityMapBinding
-import org.osmdroid.api.IGeoPoint
 import org.osmdroid.config.Configuration
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -53,7 +52,7 @@ class MapActivity : AppCompatActivity() {
                 selectedLocation = GeoPoint(geoPoint.latitude, geoPoint.longitude)
                 marker.position = selectedLocation
                 marker.title = "Selected Location"
-                mapView.invalidate() // Refresh the map view
+                mapView.invalidate()
                 return true
             }
         })
@@ -81,7 +80,7 @@ class MapActivity : AppCompatActivity() {
                     val currentLocation = GeoPoint(location.latitude, location.longitude)
                     setupMap(currentLocation)
                 } else {
-                    val defaultLocation = GeoPoint(30.0444, 31.2357) // Cairo as default
+                    val defaultLocation = GeoPoint(30.0444, 31.2357)
                     setupMap(defaultLocation)
                 }
             }
@@ -94,7 +93,7 @@ class MapActivity : AppCompatActivity() {
 
         marker = Marker(mapView)
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-        marker.icon = resources.getDrawable(R.drawable.map_marker) // Set marker icon
+        marker.icon = resources.getDrawable(R.drawable.map_marker)
         marker.position = location
         marker.title = "Current Location"
         mapView.overlays.add(marker)

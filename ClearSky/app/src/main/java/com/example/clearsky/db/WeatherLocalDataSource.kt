@@ -6,19 +6,13 @@ import com.example.clearsky.model.CurrentResponseApi
 import com.example.clearsky.model.ForecastResponseApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-class WeatherLocalDataSource private constructor(context: Context) : IWeatherLocalDataSource {
+class WeatherLocalDataSource(
     private val weatherDao: WeatherDao
-    val storedForecasts: LiveData<List<ForecastResponseApi>>
-    val storedCurrentWeather: LiveData<List<CurrentResponseApi>>
+) : IWeatherLocalDataSource {
 
-    init {
-        val database = WeatherDatabase.getDatabase(context.applicationContext)
-        weatherDao = database.weatherDao()
-        storedForecasts = weatherDao.getWeatherForecast("Cairo")
-        storedCurrentWeather = weatherDao.getWeatherByCity("Cairo")
-    }
 
     companion object {
         @Volatile
@@ -26,12 +20,14 @@ class WeatherLocalDataSource private constructor(context: Context) : IWeatherLoc
 
         fun getInstance(context: Context): WeatherLocalDataSource {
             return instance ?: synchronized(this) {
-                instance ?: WeatherLocalDataSource(context).also { instance = it }
+                instance ?: WeatherLocalDataSource(WeatherDatabase.getDatabase(context).weatherDao()).also {
+                    instance = it
+                }
             }
         }
     }
 
-    override suspend fun getFavorites(): List<CurrentResponseApi> {
+    override suspend fun getFavorites(): Flow<List<CurrentResponseApi>> {
         return weatherDao.getFavorites()
     }
 

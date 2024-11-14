@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/babyBlue"
     android:backgroundTint="@color/babyBlue"
     android:orientation="vertical"
@@ -9,11 +10,10 @@
 
     <Button
         android:id="@+id/btn_request_permission"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:background="@color/bluee"
-        android:contentDescription="Request overlay permission"
+        android:backgroundTint="@color/bluee"
         android:text="@string/enableView" />
 
     <LinearLayout
@@ -91,21 +91,23 @@
             android:id="@+id/radio_alarm_sound"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/Alert" />
+            android:text="@string/Alert"
+            app:buttonTint="@color/darkyellow" />
 
         <RadioButton
             android:id="@+id/radio_notification_only"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/NotificationOnly" />
+            android:text="@string/NotificationOnly"
+            app:buttonTint="@color/darkyellow"/>
     </RadioGroup>
 
     <Button
         android:id="@+id/btn_save_notification"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:background="@color/bluee"
+        android:backgroundTint="@color/bluee"
         android:text="@string/save" />
 
     <androidx.recyclerview.widget.RecyclerView

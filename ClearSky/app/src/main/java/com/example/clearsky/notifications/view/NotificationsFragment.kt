@@ -40,7 +40,6 @@ class NotificationsFragment : Fragment() {
     private var _binding: FragmentNotificationsBinding? = null
     private val binding get() = _binding!!
     private lateinit var sharedPreferences: SharedPreferences
-
     private lateinit var startDateEditText: EditText
     private lateinit var startTimeEditText: EditText
     private lateinit var endDateEditText: EditText

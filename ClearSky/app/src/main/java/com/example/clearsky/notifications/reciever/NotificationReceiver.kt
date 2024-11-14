@@ -36,16 +36,17 @@ class NotificationReceiver(
 
         runBlocking {
             val weather = weatherRepository.getCurrentWeather(lat, lng, tempUnit, language)
+            val wind = weather.wind.speed
             val tempInKelvin = weather.main.temp
             val tempInCelsius = tempInKelvin - 273.15 // Convert from Kelvin to Celsius
             val condition = weather.weather[0].description.replaceFirstChar { it.uppercaseChar() }
 
             if (tempInCelsius > 35 || tempInCelsius < 5) {
                 contentTitle = "ClearSky has bad news for you :|"
-                contentText = "Unfavorable weather: $condition, Temperature: %.2f°C. Please stay safe indoors.".format(tempInCelsius)
+                contentText = "Unfavorable weather: $condition, Temperature: %.2f°C, %.2fm/s. Please stay safe indoors.".format(tempInCelsius, wind)
             } else {
                 contentTitle = "ClearSky has good news for you :)"
-                contentText = "Mild weather: $condition, Temperature: %.2f°C. Enjoy your day!".format(tempInCelsius)
+                contentText = "Mild weather: $condition, Temperature: %.2f°C, %.2fm/s. Enjoy your day!".format(tempInCelsius, wind)
             }
         }
 

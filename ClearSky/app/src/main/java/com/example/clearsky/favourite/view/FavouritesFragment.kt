@@ -107,6 +107,7 @@ class FavouritesFragment : Fragment() {
     }
 
     private fun navigateToHome(city: CurrentResponseApi) {
+//                val sharedPreferences = requireContext().getSharedPreferences("SettingsPrefs", Context.MODE_PRIVATE)
         val sharedPreferences = requireContext().getSharedPreferences("SettingsPrefs", Context.MODE_PRIVATE)
         with(sharedPreferences.edit()) {
             putFloat("lat", city.coord.lat.toFloat())

@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.example.clearsky.R
 import com.example.clearsky.model.ForecastResponseApi
 import com.example.clearsky.databinding.ItemFiveDayForecastBinding
 import java.text.SimpleDateFormat
@@ -29,21 +30,27 @@ class ForecastDaysAdapter : RecyclerView.Adapter<ForecastDaysAdapter.ViewHolder>
         calendar.time = date
 
         val dayOfWeekName = when (calendar.get(Calendar.DAY_OF_WEEK)) {
-            Calendar.SUNDAY -> "Sun"
-            Calendar.MONDAY -> "Mon"
-            Calendar.TUESDAY -> "Tue"
-            Calendar.WEDNESDAY -> "Wed"
-            Calendar.THURSDAY -> "Thu"
-            Calendar.FRIDAY -> "Fri"
-            Calendar.SATURDAY -> "Sat"
+            Calendar.SUNDAY -> binding.root.context.getString(R.string.sunday)
+            Calendar.MONDAY -> binding.root.context.getString(R.string.monday)
+            Calendar.TUESDAY -> binding.root.context.getString(R.string.tuesday)
+            Calendar.WEDNESDAY -> binding.root.context.getString(R.string.wednesday)
+            Calendar.THURSDAY -> binding.root.context.getString(R.string.thursday)
+            Calendar.FRIDAY -> binding.root.context.getString(R.string.friday)
+            Calendar.SATURDAY -> binding.root.context.getString(R.string.saturday)
             else -> "-"
         }
         binding.tvDayName.text = dayOfWeekName
         val kelvinToCelsius = { kelvin: Double -> Math.round(kelvin).toString() }
 
-        binding.tvMaxTemp.text = "Max: ${kelvinToCelsius(forecast.main.tempMax)}°C"
-        binding.tvMinTemp.text = "Min: ${kelvinToCelsius(forecast.main.tempMin)}°C"
-        binding.tvFeelsLike.text = "Feels like: ${kelvinToCelsius(forecast.main.feelsLike)}°C"
+        binding.tvMaxTemp.text = binding.root.context.getString(
+            R.string.max_temp, kelvinToCelsius(forecast.main.tempMax)
+        )
+        binding.tvMinTemp.text = binding.root.context.getString(
+            R.string.min_temp, kelvinToCelsius(forecast.main.tempMin)
+        )
+        binding.tvFeelsLike.text = binding.root.context.getString(
+            R.string.feels_like, kelvinToCelsius(forecast.main.feelsLike)
+        )
     }
 
     override fun getItemCount() = differ.currentList.size

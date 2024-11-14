@@ -3,6 +3,7 @@ package com.example.clearsky.setting.view
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -19,6 +20,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Overlay
+import java.util.Locale
 
 class MapSettingActivity : AppCompatActivity() {
         private lateinit var binding: ActivityMapSettingBinding
@@ -38,7 +40,6 @@ class MapSettingActivity : AppCompatActivity() {
 
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-            // Check location permissions
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
@@ -52,16 +53,18 @@ class MapSettingActivity : AppCompatActivity() {
                     selectedLocation = GeoPoint(geoPoint.latitude, geoPoint.longitude)
                     marker.position = selectedLocation
                     marker.title = "Selected Location"
-                    mapView.invalidate() // Refresh the map view
+                    mapView.invalidate()
                     return true
                 }
             })
 
             binding.buttonSelect.setOnClickListener {
                 selectedLocation?.let { geoPoint ->
+                    val cityName = getCityName(geoPoint.latitude, geoPoint.longitude)
                     val resultIntent = Intent().apply {
                         putExtra("lat", geoPoint.latitude)
                         putExtra("lon", geoPoint.longitude)
+                        putExtra("name", cityName)
                     }
                     setResult(RESULT_OK, resultIntent)
                     finish()
@@ -71,7 +74,15 @@ class MapSettingActivity : AppCompatActivity() {
             }
         }
 
-        private fun getCurrentLocation() {
+    private fun getCityName(latitude: Double, longitude: Double): String {
+        val geocoder = Geocoder(this, Locale.getDefault())
+        val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+        return if (addresses?.isNotEmpty() == true) {
+            addresses[0]?.locality ?: "Unknown City"
+        } else {
+            "Unknown City"
+        }}
+            private fun getCurrentLocation() {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
@@ -80,7 +91,7 @@ class MapSettingActivity : AppCompatActivity() {
                         val currentLocation = GeoPoint(location.latitude, location.longitude)
                         setupMap(currentLocation)
                     } else {
-                        val defaultLocation = GeoPoint(30.0444, 31.2357) // Cairo as default
+                        val defaultLocation = GeoPoint(30.0444, 31.2357)
                         setupMap(defaultLocation)
                     }
                 }
@@ -93,7 +104,7 @@ class MapSettingActivity : AppCompatActivity() {
 
             marker = Marker(mapView)
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            marker.icon = resources.getDrawable(R.drawable.map_marker) // Set marker icon
+            marker.icon = resources.getDrawable(R.drawable.map_marker)
             marker.position = location
             marker.title = "Current Location"
             mapView.overlays.add(marker)

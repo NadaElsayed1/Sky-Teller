@@ -9,9 +9,9 @@
     <string name="CurrentTemp">0</string>
     <string name="HumidityUnit">-%</string>
     <string name="DayName">الإثنين، 23 أكتوبر</string>
-    <string name="MaxTemp">الحد الأقصى: 20°C</string>
-    <string name="MinTemp">الحد الأدنى: 10°C</string>
-    <string name="FeelsLike">يشعر وكأنه: 15°C</string>
+    <string name="MaxTemp">الحد الأقصى: 20°س</string>
+    <string name="MinTemp">الحد الأدنى: 10°س</string>
+    <string name="FeelsLike">يشعر وكأنه: 15°س</string>
     <string name="enableView">تمكين العرض فوق التطبيقات الأخرى</string>
     <string name="TimeTitle">وقت البدء:</string>
     <string name="EndTitle">وقت الانتهاء:</string>
@@ -27,9 +27,9 @@
     <string name="English">الإنجليزية</string>
     <string name="Default">افتراضي</string>
     <string name="TempUnit">وحدة درجة الحرارة</string>
-    <string name="Celsius">سلسيوس °C</string>
-    <string name="Kelvin">كيلفن °K</string>
-    <string name="Fahrenheit">فهرنهايت °F</string>
+    <string name="Celsius">سلسيوس °س</string>
+    <string name="Kelvin">كيلفن °ك</string>
+    <string name="Fahrenheit">فهرنهايت °ف</string>
     <string name="Location">الموقع</string>
     <string name="GPS">نظام تحديد المواقع</string>
     <string name="Map">الخريطة</string>
@@ -43,5 +43,30 @@
     <string name="pressure">الضغط: </string>
     <string name="pressureValue">القيمة</string>
     <string name="feelval">القيمة</string>
+    <string name="unit_celsius">°س</string>
+    <string name="unit_fahrenheit">°ف</string>
+    <string name="unit_kelvin">°ك</string>
+    <string name="unit_meter_per_sec">م/ث</string>
+    <string name="unit_mile_per_hour">ميل/ساعة</string>
+    <string name="unit_pressure">هكتوباسكال</string>
+    <string name="statusTxt">-طقس</string>
+    <string name="cityTxt">اسم المدينة</string>
+    <!-- Days of the Week in Arabic -->
+    <string name="sunday">الأحد</string>
+    <string name="monday">الإثنين</string>
+    <string name="tuesday">الثلاثاء</string>
+    <string name="wednesday">الأربعاء</string>
+    <string name="thursday">الخميس</string>
+    <string name="friday">الجمعة</string>
+    <string name="saturday">السبت</string>
+
+    <!-- AM/PM in Arabic -->
+    <string name="am">ص</string>
+    <string name="pm">م</string>
+
+    <!-- Temperature Labels in Arabic -->
+    <string name="max_temp">العظمى: %1$s°م</string>
+    <string name="min_temp">الصغرى: %1$s°م</string>
+    <string name="feels_like">يبدو كأنه: %1$s°م</string>
 
 </resources>
